@@ -1,0 +1,47 @@
+<?php
+
+namespace frontend\controllers;
+
+use Yii;
+use yii\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\filters\AccessControl;
+use yii\filters\VerbFilter;
+use common\models\PermisosHelpers;
+use common\models\RegistrosHelpers;
+use frontend\models\Perfil;
+
+class UpgradeController extends Controller
+{
+    public function behaviors()
+    {
+        return [
+            'access' => [
+                'class' => AccessControl::class,
+                'only' => ['index'],
+                'rules' => [
+                    [
+                        'actions' => ['index'],
+                        'allow' => true,
+                        'roles' => ['@'],
+                        'matchCallback' => function ($rule, $action) {
+                            return PermisosHelpers::requerirEstado('Activo');
+                        }
+                    ],
+                ],
+            ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'delete' => ['post'],
+                ],
+            ],
+        ];
+    }
+
+    public function actionIndex()
+    {
+        $persona = Perfil::find()->where(['user_id' => Yii::$app->user->identity->id])->one();
+        return $this->render('index',['persona' => $persona]);
+    }
+}

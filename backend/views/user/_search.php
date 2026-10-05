@@ -1,0 +1,46 @@
+<?php
+
+use yii\helpers\Html;
+use yii\bootstrap5\ActiveForm;
+use common\models\User;
+
+/**
+ * @var yii\web\View $this
+ * @var backend\models\search\UserSearch $model
+ * @var ActiveForm $form
+ */
+?>
+
+<div class="user-search">
+
+    <?php $form = ActiveForm::begin([
+        'action' => ['index'],
+        'method' => 'get',
+    ]); ?>
+
+    <?= $form->field($model, 'id') ?>
+    
+    <?= $form->field($model, 'username') ?>
+    
+    <?= $form->field($model, 'email') ?>
+    
+    <?= $form->field($model, 'rol_id')->dropDownList(User::getRolLista(), [
+        'prompt' => 'Por Favor Elija Uno'
+    ]); ?>
+    
+    <?= $form->field($model, 'tipo_usuario_id')->dropDownList(User::getTipoUsuarioLista(), [
+        'prompt' => 'Por Favor Elija Uno'
+    ]); ?>
+    
+    <?= $form->field($model, 'estado_id')->dropDownList($model->estadoLista, [
+        'prompt' => 'Por Favor Elija Uno'
+    ]); ?>
+
+    <div class="form-group mt-3">
+        <?= Html::submitButton('Search', ['class' => 'btn btn-primary']) ?>
+        <?= Html::resetButton('Reset', ['class' => 'btn btn-outline-secondary']) ?>
+    </div>
+
+    <?php ActiveForm::end(); ?>
+
+</div>
