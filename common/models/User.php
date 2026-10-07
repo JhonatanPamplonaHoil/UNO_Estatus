@@ -213,6 +213,14 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Genera el token de verificación de correo electrónico
+     */
+    public function generateEmailVerificationToken()
+    {
+        $this->verification_token = Yii::$app->security->generateRandomString() . '_' . time();
+    }
+
+    /**
      * Genera nueva clave de restablecimiento de password
      * dividida en dos líneas para evitar ajuste de línea
      */

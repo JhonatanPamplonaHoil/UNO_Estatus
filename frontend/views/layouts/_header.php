@@ -22,6 +22,16 @@ $items = [
         'url' => ['/site/contact'],
     ],
     [
+        'label' => 'Mis Trámites',
+        'url' => ['/tramite/index'],
+        'visible' => !Yii::$app->user->isGuest,
+    ],
+    [
+        'label' => 'Perfil',
+        'url' => ['/perfil/view'],
+        'visible' => !Yii::$app->user->isGuest,
+    ],
+    [
         'label' => 'Signup',
         'url' => ['/site/signup'],
         'visible' => Yii::$app->user->isGuest,
@@ -30,11 +40,6 @@ $items = [
         'label' => 'Login',
         'url' => ['/site/login'],
         'visible' => Yii::$app->user->isGuest,
-    ],
-    [
-      'label' => 'Perfil',
-      'url' => ['/perfil/view'],
-      'visible' => !Yii::$app->user->isGuest,
     ],
     [
         'label' => 'Logout (' . Html::encode(Yii::$app->user->identity?->username) . ')',
@@ -51,7 +56,7 @@ $items = [
 <header id="header">
     <?php NavBar::begin(
         [
-            'brandLabel' => 'Yii 2 Build <i class="fa fa-plug"></i>',
+            'brandLabel' => 'UNO <i class="fa fa-plug"></i>',
             'brandUrl' => Yii::$app->homeUrl,
             'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top']
         ],
