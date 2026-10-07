@@ -5,6 +5,7 @@ namespace common\models;
 use Yii;
 use yii\behaviors\TimestampBehavior;
 use yii\db\Expression;
+use common\models\User;
 
 /**
  * This is the model class for table "tramite_titulacion".
@@ -26,6 +27,7 @@ use yii\db\Expression;
  * @property CitaEntrega $citaEntrega
  * @property EtapaTramite $etapaActual
  * @property ModalidadTitulacion $modalidad
+ * @property User $user
  */
 class TramiteTitulacion extends \yii\db\ActiveRecord
 {
@@ -70,6 +72,7 @@ class TramiteTitulacion extends \yii\db\ActiveRecord
             [['carrera_id'], 'exist', 'skipOnError' => true, 'targetClass' => Carrera::class, 'targetAttribute' => ['carrera_id' => 'id']],
             [['modalidad_id'], 'exist', 'skipOnError' => true, 'targetClass' => ModalidadTitulacion::class, 'targetAttribute' => ['modalidad_id' => 'id']],
             [['etapa_actual_id'], 'exist', 'skipOnError' => true, 'targetClass' => EtapaTramite::class, 'targetAttribute' => ['etapa_actual_id' => 'id']],
+            [['user_id'], 'exist', 'skipOnError' => true, 'targetClass' => User::class, 'targetAttribute' => ['user_id' => 'id']],
         ];
     }
 
@@ -91,6 +94,16 @@ class TramiteTitulacion extends \yii\db\ActiveRecord
             'created_at' => 'Fecha de Registro',
             'updated_at' => 'Última Actualización',
         ];
+    }
+
+    /**
+     * Gets query for [[User]].
+     *
+     * @return \yii\db\ActiveQuery
+     */
+    public function getUser()
+    {
+        return $this->hasOne(User::class, ['id' => 'user_id']);
     }
 
     /**
