@@ -25,9 +25,9 @@ $this->params['meta_keywords'] = 'yii, yii2, php, framework, web application, hi
                 ['class' => 'btn btn-lg btn-success']);
         } ?>
 
-        <h1>Yii 2 Build <i class="fa fa-plug"></i></h1>
+        <h1>UNO Estatus - Frontend <i class="fa fa-plug"></i></h1>
 
-        <p class="lead">Use esta plantilla de Yii 2 para comenzar Proyectos.</p>
+        <p class="lead">SISTEMA DE SEGUIMIENTO DE TRÁMITE DE TITULACIÓN PARA EGRESADOS DE LA UNIVERSIDAD DE ORIENTE DE VALLADOLID.</p>
 
         <br/>
 
