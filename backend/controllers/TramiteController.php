@@ -66,7 +66,7 @@ class TramiteController extends Controller
     {
         $model = $this->findModel($id);
         
-        // Obtenemos el historial de auditoría ordenado del más reciente al más antiguo
+        // Historial de auditoría ordenado del más reciente al más antiguo
         $historialAuditoria = AuditoriaTramite::find()
             ->where(['tramite_id' => $model->id])
             ->orderBy(['created_at' => SORT_DESC])
@@ -79,7 +79,8 @@ class TramiteController extends Controller
     }
 
     /**
-     * Avanza o actualiza la etapa del trámite y registra la auditoría inmutable.
+     * Avanza o actualiza la etapa del trámite, registra la auditoría inmutable
+     * y envía la notificación por correo electrónico al egresado.
      */
     public function actionCambiarEtapa($id)
     {
@@ -88,14 +89,15 @@ class TramiteController extends Controller
         $motivo = Yii::$app->request->post('motivo', 'Actualización de etapa por Servicios Escolares');
 
         if ($nuevaEtapaId && $nuevaEtapaId != $model->etapa_actual_id) {
+            $etapaAnteriorModel = $model->etapaActual;
             $etapaAnteriorId = $model->etapa_actual_id;
 
-            // Transacción para garantizar que si falla la auditoría, no cambie el trámite
+            // Transacción para garantizar consistencia entre trámite y bitácora
             $transaction = Yii::$app->db->beginTransaction();
             try {
                 $model->etapa_actual_id = (int)$nuevaEtapaId;
                 if ($model->save(false)) {
-                    // Registro en la bitácora inmutable
+                    // 1. Registro en la bitácora inmutable
                     $auditoria = new AuditoriaTramite();
                     $auditoria->tramite_id = $model->id;
                     $auditoria->etapa_anterior_id = $etapaAnteriorId;
@@ -107,7 +109,49 @@ class TramiteController extends Controller
 
                     if ($auditoria->save(false)) {
                         $transaction->commit();
-                        Yii::$app->session->setFlash('success', 'La etapa del trámite se actualizó correctamente y quedó asentada en la bitácora.');
+
+                        // 2. Disparo de Notificación por Correo
+                        $alumno = $model->user;
+                        $etapaNuevaModel = EtapaTramite::findOne($nuevaEtapaId);
+
+                        if ($alumno && !empty($alumno->email)) {
+                            try {
+                                $mensaje = Yii::$app->mailer->compose(
+                                    ['html' => 'notificacionEtapa-html'],
+                                    [
+                                        'user' => $alumno,
+                                        'tramite' => $model,
+                                        'etapaAnterior' => $etapaAnteriorModel ? $etapaAnteriorModel->nombre : 'Inicial',
+                                        'etapaNueva' => $etapaNuevaModel ? $etapaNuevaModel->nombre : '-',
+                                        'motivo' => $motivo,
+                                    ]
+                                )
+                                ->setFrom(['l22070081@valladolid.tecnm.mx' => 'Sistema UNO Titulación'])
+                                ->setTo($alumno->email)
+                                ->setSubject('Actualización de Estado de Titulación - Folio ' . $model->folio);
+
+                                $sent = $mensaje->send();
+
+                                // Guardar respaldo físico local del correo enviado
+                                $dirMail = Yii::getAlias('@backend/runtime/mail');
+                                if (!is_dir($dirMail)) {
+                                    mkdir($dirMail, 0777, true);
+                                }
+                                $nombreArchivo = 'notificacion_' . $model->folio . '_' . time() . '.eml';
+                                file_put_contents($dirMail . DIRECTORY_SEPARATOR . $nombreArchivo, $mensaje->toString());
+
+                                if ($sent) {
+                                    Yii::$app->session->setFlash('success', 'Etapa actualizada, bitácora registrada y correo enviado correctamente por internet.');
+                                } else {
+                                    Yii::$app->session->setFlash('warning', 'La etapa cambió, pero la función send() no pudo entregar el correo.');
+                                }
+                            } catch (\Throwable $mailEx) {
+                                Yii::$app->session->setFlash('error', 'Fallo al procesar el correo: ' . $mailEx->getMessage());
+                            }
+                        } else {
+                            Yii::$app->session->setFlash('success', 'La etapa y la bitácora se actualizaron con éxito (sin correo de destino).');
+                        }
+
                     } else {
                         $transaction->rollBack();
                         Yii::$app->session->setFlash('error', 'No se pudo asentar el cambio en la bitácora de auditoría.');
