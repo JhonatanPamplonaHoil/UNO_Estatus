@@ -5,136 +5,152 @@ declare(strict_types=1);
 /** @var yii\web\View $this */
 use yii\bootstrap5\Modal;
 use kartik\social\FacebookPlugin;
-use yii\bootstrap5\Collapse;
 use yii\bootstrap5\Alert;
 use yii\helpers\Html;
-use yii\widgets\ActiveForm;
-use yii\helpers\Url;
 use yii\bootstrap5\Accordion;
 
-$this->title = 'UNO';
-$this->params['meta_description'] = 'A high-performance PHP framework best for developing web applications. Fast, secure, and professional.';
-$this->params['meta_keywords'] = 'yii, yii2, php, framework, web application, high-performance';
+$this->title = 'UNO Estatus - Sistema de Titulación';
+$this->params['meta_description'] = 'Sistema de seguimiento de trámite de titulación para egresados de la Universidad de Oriente de Valladolid.';
+$this->params['meta_keywords'] = 'uno, titulacion, tramite, egresados, valladolid, yii2';
 ?>
 <div class="site-index">
 
-    <div class="jumbotron">
+    <!-- Banner Principal con Distribución de 2 Columnas -->
+    <div class="p-5 mb-4 rounded-3 shadow-sm text-white position-relative overflow-hidden" 
+         style="background: url('<?= Yii::getAlias('@web') ?>/images/fondo_banner.png') center/cover no-repeat; border-left: 8px solid #4a121f;">
+        
+        <div class="container-fluid py-2 position-relative" style="z-index: 2;">
+            
+            <div class="row align-items-center">
+                <!-- Columna Izquierda: Título, Descripción y Botones -->
+                <div class="col-lg-8">
+                    <h1 class="display-6 fw-bold text-white mb-2" style="text-shadow: 0 2px 4px rgba(0,0,0,0.5);">
+                        Sistema de Seguimiento de Titulación <i class="fa fa-graduation-cap ms-2"></i>
+                    </h1>
+                    <p class="fs-5 text-light mb-4" style="text-shadow: 0 1px 3px rgba(0,0,0,0.6);">
+                        Plataforma oficial para la gestión y estatus de trámites de titulación de egresados de la Universidad de Oriente de Valladolid.
+                    </p>
+                    
+                    <!-- Acciones de Usuario -->
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <?php if (Yii::$app->user->isGuest): ?>
+                            <?= Html::a('Comience Hoy', ['site/signup'], ['class' => 'btn btn-lg btn-light text-dark fw-bold shadow-sm']) ?>
+                            <?= Html::a('Iniciar Sesión', ['site/login'], ['class' => 'btn btn-lg btn-outline-light shadow-sm']) ?>
+                        <?php else: ?>
+                            <span class="badge bg-light text-dark fs-6 p-2 shadow-sm">
+                                Bienvenido, <?= Html::encode(Yii::$app->user->identity->username) ?>
+                            </span>
+                            <?= Html::a('Ver Mi Trámite', ['tramite/index'], ['class' => 'btn btn-lg btn-warning shadow-sm fw-bold']) ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
 
-        <?php if (Yii::$app->user->isGuest) {
-            echo Html::a('Comience Hoy', ['site/signup'],
-                ['class' => 'btn btn-lg btn-success']);
-        } ?>
+                <!-- Columna Derecha: Logo Institucional con Fondo Blanco -->
+                <div class="col-lg-4 text-lg-end text-center mt-4 mt-lg-0">
+                    <div class="bg-white p-3 rounded-3 shadow-sm d-inline-block">
+                        <?= Html::img('@web/images/logo_uno.png', [
+                            'alt' => 'Logo Universidad de Oriente', 
+                            'style' => 'height: 65px; object-fit: contain;'
+                        ]) ?>
+                    </div>
+                </div>
+            </div>
 
-        <h1>UNO Estatus - Frontend <i class="fa fa-plug"></i></h1>
-
-        <p class="lead">SISTEMA DE SEGUIMIENTO DE TRÁMITE DE TITULACIÓN PARA EGRESADOS DE LA UNIVERSIDAD DE ORIENTE DE VALLADOLID.</p>
-
-        <br/>
-
-        <?php  echo FacebookPlugin::widget([
-            'type'=>FacebookPlugin::LIKE,
-            'settings' => []
-        ]); ?>
-
+        </div>
     </div>
 
-    <?php
-    echo Accordion::widget([
-        'items' => [
-            [
-                'label' => 'Características Principales' ,
-                'content' => FacebookPlugin::widget([
-                    'type'=>FacebookPlugin::SHARE,
-                    'settings' => ['href'=>'http://www.yii2build.com','width'=>'350']
-                ]),
-            ],
-            [
-                'label' => 'Recursos Principales',
-                'content' => FacebookPlugin::widget([
-                    'type'=>FacebookPlugin::SHARE,
-                    'settings' => ['href'=>'http://www.yii2build.com','width'=>'350']
-                ]),
-            ],
-        ]
-    ]);
-
-    Modal::begin([
-        'title' => '<h2>Últimos Comentarios</h2>',
-        'toggleButton' => ['label' => 'comentarios'],
-    ]);
-
-    echo FacebookPlugin::widget([
-        'type'=>FacebookPlugin::COMMENT,
-        'settings' => ['href'=>'http://www.yii2build.com','width'=>'350']
-    ]);
-
-    Modal::end();
-    ?>
-
-    <br/>
-    <br/>
-
-    <?php
-    echo Alert::widget([
+    <!-- Alerta Informativa -->
+    <?= Alert::widget([
         'options' => [
-            'class' => 'alert-info',
+            'class' => 'alert shadow-sm rounded-3 border-0 text-dark',
+            'style' => 'background-color: #f4e8eb; border-left: 4px solid #6b1d2f !important;',
         ],
-        'body' => 'Lance su proyecto como un cohete...',
-    ]);
-    ?>
+        'body' => '<i class="fa fa-info-circle me-2" style="color: #6b1d2f;"></i> Consulta de forma ágil el avance de tu expediente de titulación en tiempo real.',
+    ]); ?>
 
-    <div class="body-content">
-        <div class="row">
+    <!-- Etapas del Proceso de Titulación -->
+    <div class="body-content my-4">
+        <div class="row g-4">
             <div class="col-lg-4">
-                <h2>Gratis</h2>
-                <p>
-                    <?php
-                    if (!Yii::$app->user->isGuest) {
-                        echo Yii::$app->user->identity->username . ' está haciendo cosas geniales. ';
-                    }
-                    ?>
-                    Partiendo de esta plantilla de código abierto y gratuita de Yii 2 ahorrará mucho tiempo.
-                    Puede entregar proyectos al cliente rápidamente, con mucho de código ya disponible, para
-                    que pueda concentrarse en los asuntos complejos.
-                </p>
-                <p>
-                    <a class="btn btn-default" href="http://www.yiiframework.com/doc-2.0/guide-index.html">Documentación de Yii &raquo;</a>
-                </p>
-                <?php
-                echo FacebookPlugin::widget([
-                    'type'=>FacebookPlugin::LIKE,
-                    'settings' => []
-                ]);
-                ?>
+                <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+                    <div class="card-body">
+                        <h3 class="h4 fw-bold" style="color: #6b1d2f;"><i class="fa fa-file-text me-2"></i>1. Requisitos</h3>
+                        <p class="text-secondary mt-3">
+                            Inicia tu proceso adjuntando la documentación requerida para la revisión previa por el departamento escolar.
+                        </p>
+                    </div>
+                </div>
             </div>
+
             <div class="col-lg-4">
-                <h2>Ventajas</h2>
-                <p>
-                    La facilidad de uso es una enorme ventaja.  Hemos simplificado el RBAC y le hemos
-                    otorgado tipos de usuario Gratuito/Pago de manera predeterminada.  Los plugins sociales
-                    son tan sencillos y rápidos de instalar, ¡que los amará!
-                </p>
-                <p>
-                    <a class="btn btn-default" href="http://www.yiiframework.com/forum/">Foro de Yii &raquo;</a>
-                </p>
-                <?php
-                echo FacebookPlugin::widget([
-                    'type'=>FacebookPlugin::COMMENT,
-                    'settings' => ['href'=>'http://www.yii2build.com','width'=>'350']
-                ]);
-                ?>
+                <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+                    <div class="card-body">
+                        <h3 class="h4 fw-bold" style="color: #6b1d2f;"><i class="fa fa-line-chart me-2"></i>2. Seguimiento</h3>
+                        <p class="text-secondary mt-3">
+                            Monitorea los avances de cada etapa de tu trámite y recibe notificaciones cuando cambie el estatus de tu solicitud.
+                        </p>
+                    </div>
+                </div>
             </div>
+
             <div class="col-lg-4">
-                <h2>¡Codifique Rápidamente, Codifique Correctamente!</h2>
-                <p>
-                    Libere el poder del asombroso framework Yii 2 con esta plantilla mejorada.
-                    Con base en la plantilla avanzada de Yii 2, obtiene una implementación de frontend y
-                    backend completa que presenta una IU rica para la administración del backend.
-                </p>
-                <p>
-                    <a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Extensiones de Yii &raquo;</a>
-                </p>
+                <div class="card h-100 border-0 shadow-sm rounded-3 p-3">
+                    <div class="card-body">
+                        <h3 class="h4 fw-bold" style="color: #6b1d2f;"><i class="fa fa-certificate me-2"></i>3. Titulación</h3>
+                        <p class="text-secondary mt-3">
+                            Consulta la fecha asignada para el acto protocolario y la emisión final de tu título profesional.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Acordeón y Sección de Comentarios -->
+    <div class="row my-4">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm p-3">
+                <h5 class="fw-bold mb-3" style="color: #6b1d2f;">Información Adicional</h5>
+                <?= Accordion::widget([
+                    'items' => [
+                        [
+                            'label' => 'Características Principales',
+                            'content' => FacebookPlugin::widget([
+                                'type' => FacebookPlugin::SHARE,
+                                'settings' => ['href' => 'http://www.yii2build.com', 'width' => '350']
+                            ]),
+                        ],
+                        [
+                            'label' => 'Recursos Principales',
+                            'content' => FacebookPlugin::widget([
+                                'type' => FacebookPlugin::SHARE,
+                                'settings' => ['href' => 'http://www.yii2build.com', 'width' => '350']
+                            ]),
+                        ],
+                    ]
+                ]); ?>
+            </div>
+        </div>
+
+        <div class="col-md-4 d-flex align-items-start justify-content-center pt-3">
+            <?php
+            Modal::begin([
+                'title' => '<h4 class="m-0 fw-bold" style="color: #6b1d2f;">Últimos Comentarios</h4>',
+                'toggleButton' => [
+                    'label' => '<i class="fa fa-comments me-1"></i> Ver Comentarios',
+                    'class' => 'btn btn-outline-dark btn-lg w-100 shadow-sm',
+                    'style' => 'border-color: #6b1d2f; color: #6b1d2f;'
+                ],
+            ]);
+
+            echo FacebookPlugin::widget([
+                'type' => FacebookPlugin::COMMENT,
+                'settings' => ['href' => 'http://www.yii2build.com', 'width' => '100%']
+            ]);
+
+            Modal::end();
+            ?>
+        </div>
+    </div>
+
 </div>
