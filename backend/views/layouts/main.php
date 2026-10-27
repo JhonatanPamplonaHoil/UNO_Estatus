@@ -63,6 +63,7 @@ FontAwesomeAsset::register($this);
     ];
 
     if (!Yii::$app->user->isGuest && $es_admin) {
+        $menuItems[] = ['label' => 'Trámites', 'url' => ['tramite/index']];
         $menuItems[] = ['label' => 'Usuarios', 'url' => ['user/index']];
         $menuItems[] = ['label' => 'Perfiles', 'url' => ['perfil/index']];
         $menuItems[] = ['label' => 'Roles', 'url' => ['rol/index']];
