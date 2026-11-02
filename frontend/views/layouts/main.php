@@ -24,7 +24,7 @@ $this->render('_head');
 
 <?= $this->render('_header') ?>
 
-<main id="main" class="flex-grow-1" role="main">
+<main id="main" class="flex-grow-1" role="main" style="margin-top: 100px;">
     <div class="container">
         <?php if (!empty($this->params['breadcrumbs'])): ?>
             <?= Breadcrumbs::widget(['links' => $this->params['breadcrumbs']]) ?>

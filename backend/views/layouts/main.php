@@ -41,7 +41,7 @@ FontAwesomeAsset::register($this);
     // 2. Validación estricta para mostrar el menú Admin
     if (!Yii::$app->user->isGuest && $es_admin) {
         NavBar::begin([
-            'brandLabel' => 'Yii 2 Build <i class="fa fa-plug"></i> Admin',
+            'brandLabel' => 'UNO Estatus <i class="fa fa-plug"></i> Admin',
             'brandUrl' => Yii::$app->homeUrl,
             'options' => [
                 'class' => 'navbar-expand-md navbar-dark bg-dark fixed-top',
@@ -49,7 +49,7 @@ FontAwesomeAsset::register($this);
         ]);
     } else {
         NavBar::begin([
-            'brandLabel' => 'Yii 2 Build <i class="fa fa-plug"></i>',
+            'brandLabel' => 'UNO <i class="fa fa-plug"></i>',
             'brandUrl' => Yii::$app->homeUrl,
             'options' => [
                 'class' => 'navbar-expand-md navbar-dark bg-dark fixed-top',
@@ -59,11 +59,13 @@ FontAwesomeAsset::register($this);
 
     // 3. Declaración global del menú para evitar variables indefinidas
     $menuItems = [
-        ['label' => 'Home', 'url' => ['site/index']],
+        ['label' => 'Inicio', 'url' => ['site/index']],
     ];
 
     if (!Yii::$app->user->isGuest && $es_admin) {
         $menuItems[] = ['label' => 'Trámites', 'url' => ['tramite/index']];
+        $menuItems[] = ['label' => 'Crear citas', 'url' => ['disponibilidad-cita/index']];
+        $menuItems[] = ['label' => 'Citas Agendadas', 'url' => ['cita-entrega/index']];
         $menuItems[] = ['label' => 'Usuarios', 'url' => ['user/index']];
         $menuItems[] = ['label' => 'Perfiles', 'url' => ['perfil/index']];
         $menuItems[] = ['label' => 'Roles', 'url' => ['rol/index']];
@@ -75,7 +77,7 @@ FontAwesomeAsset::register($this);
         $menuItems[] = ['label' => 'Login', 'url' => ['site/login']];
     } else {
         $menuItems[] = [
-            'label' => 'Logout (' . Yii::$app->user->identity->username . ')',
+            'label' => 'Salir (' . Yii::$app->user->identity->username . ')',
             'url' => ['/site/logout'],
             'linkOptions' => [
                 'data-method' => 'post',
@@ -104,7 +106,7 @@ FontAwesomeAsset::register($this);
 
 <footer class="footer mt-auto py-3 text-muted">
     <div class="container">
-        <p class="float-start">&copy; Yii 2 Build <?= date('Y') ?></p>
+        <p class="float-start">&copy; UNO <?= date('Y') ?></p>
         <p class="float-end"><?= Yii::powered() ?></p>
     </div>
 </footer>

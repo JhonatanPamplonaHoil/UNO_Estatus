@@ -10,7 +10,7 @@ use yii\helpers\Html;
 
 $items = [
     [
-        'label' => 'Home',
+        'label' => 'Inicio',
         'url' => ['/site/index'],
     ],
     [
@@ -22,27 +22,31 @@ $items = [
         'url' => ['/site/contact'],
     ],
     [
-        'label' => 'Mis Trámites',
+        'label' => 'Mis trámites',
         'url' => ['/tramite/index'],
         'visible' => !Yii::$app->user->isGuest,
     ],
+    [
+        'label' => 'Agendar cita', 
+        'url' => ['/cita-entrega/agendar'], 
+        'visible' => !Yii::$app->user->isGuest],
     [
         'label' => 'Perfil',
         'url' => ['/perfil/view'],
         'visible' => !Yii::$app->user->isGuest,
     ],
     [
-        'label' => 'Signup',
+        'label' => 'Crear cuenta',
         'url' => ['/site/signup'],
         'visible' => Yii::$app->user->isGuest,
     ],
     [
-        'label' => 'Login',
+        'label' => 'Iniciar sesión',
         'url' => ['/site/login'],
         'visible' => Yii::$app->user->isGuest,
     ],
     [
-        'label' => 'Logout (' . Html::encode(Yii::$app->user->identity?->username) . ')',
+        'label' => 'Salir (' . Html::encode(Yii::$app->user->identity?->username) . ')',
         'url' => ['/site/logout'],
         'linkOptions' => [
             'data-method' => 'post',
