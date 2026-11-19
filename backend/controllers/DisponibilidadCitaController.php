@@ -2,12 +2,14 @@
 
 namespace backend\controllers;
 
-use Yii; // <-- IMPORTANTE: Agregado para usar Yii::$app en AJAX
+use Yii;
 use common\models\DisponibilidadCita;
+use common\models\PermisosHelpers;
 use backend\models\search\DisponibilidadCitaSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * DisponibilidadCitaController implements the CRUD actions for DisponibilidadCita model.
@@ -22,10 +24,25 @@ class DisponibilidadCitaController extends Controller
         return array_merge(
             parent::behaviors(),
             [
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function ($rule, $action) {
+                                return PermisosHelpers::requerirMinimoRol('Admin');
+                            },
+                        ],
+                    ],
+                ],
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
+                        'crear-ajax' => ['POST'],
+                        'actualizar-ajax' => ['POST'],
+                        'eliminar-ajax' => ['POST'],
                     ],
                 ],
             ]

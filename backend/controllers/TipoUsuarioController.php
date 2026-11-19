@@ -16,20 +16,9 @@ class TipoUsuarioController extends Controller
     {
         return [
             'access' => [
-                'class' => AccessControl::className(),
-                'only' => ['index', 'view', 'create', 'update', 'delete'],
+                'class' => AccessControl::class,
                 'rules' => [
                     [
-                        'actions' => ['index', 'create', 'view'],
-                        'allow' => true,
-                        'roles' => ['@'],
-                        'matchCallback' => function ($rule, $action) {
-                            return PermisosHelpers::requerirMinimoRol('Admin') 
-                                && PermisosHelpers::requerirEstado('Activo');
-                        }
-                    ],
-                    [
-                        'actions' => ['update', 'delete'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
@@ -40,9 +29,9 @@ class TipoUsuarioController extends Controller
                 ],
             ],
             'verbs' => [
-                'class' => VerbFilter::className(),
+                'class' => VerbFilter::class,
                 'actions' => [
-                    'delete' => ['post'],
+                    'delete' => ['POST'],
                 ],
             ],
         ];

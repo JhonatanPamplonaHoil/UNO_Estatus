@@ -34,13 +34,14 @@ class SiteController extends Controller
                         'allow' => true,
                         'roles' => ['@'],
                     ],
-                    // Permitir ver el panel principal (index) SOLO si son mínimo Administradores
+                    // Permitir ver el panel principal (index) SOLO si son mínimo Administradores y están Activos
                     [
                         'actions' => ['index'],
                         'allow' => true,
                         'roles' => ['@'],
                         'matchCallback' => function ($rule, $action) {
-                            return PermisosHelpers::requerirMinimoRol('Admin');
+                            return PermisosHelpers::requerirMinimoRol('Admin')
+                                && PermisosHelpers::requerirEstado('Activo');
                         }
                     ],
                 ],
@@ -92,7 +93,13 @@ class SiteController extends Controller
 
         $model = new LoginForm();
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
+            // Rechazar el acceso si es un alumno o si la cuenta no está activa
+            if (!PermisosHelpers::requerirMinimoRol('Admin') || !PermisosHelpers::requerirEstado('Activo')) {
+                Yii::$app->user->logout();
+                $model->addError('username', 'No tienes permisos de administrador para acceder a este panel.');
+            } else {
+                return $this->goBack();
+            }
         }
 
         $model->password = '';
