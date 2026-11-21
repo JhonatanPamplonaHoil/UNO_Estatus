@@ -7,7 +7,7 @@ use common\models\PermisosHelpers;
  * @var yii\web\View $this 
  */
 
-$this->title = 'Admin Yii 2 Build';
+$this->title = 'UNO';
 
 // Inicializar la variable de forma segura para evitar errores si el usuario no ha iniciado sesión
 $es_admin = false;
