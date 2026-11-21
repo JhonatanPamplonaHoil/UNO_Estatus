@@ -25,6 +25,7 @@ FontAwesomeAsset::register($this);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <?= Html::csrfMetaTags() ?>
     <title><?= Html::encode($this->title) ?></title>
+    <link rel="icon" href="<?= Yii::getAlias('@web') ?>/images/logo.png" type="image/png">
     <?php $this->head() ?>
 </head>
 <body class="d-flex flex-column h-100">
