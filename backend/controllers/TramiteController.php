@@ -4,6 +4,7 @@ namespace backend\controllers;
 
 use Yii;
 use common\models\TramiteTitulacion;
+use common\models\PermisosHelpers;
 use backend\models\search\TramiteTitulacionSearch;
 use common\models\AuditoriaTramite;
 use common\models\EtapaTramite;
@@ -30,7 +31,11 @@ class TramiteController extends Controller
                     'rules' => [
                         [
                             'allow' => true,
-                            'roles' => ['@'], // Requiere usuario autenticado en backend
+                            'roles' => ['@'],
+                            'matchCallback' => function ($rule, $action) {
+                                return PermisosHelpers::requerirMinimoRol('Admin')
+                                    && PermisosHelpers::requerirEstado('Activo');
+                            },
                         ],
                     ],
                 ],

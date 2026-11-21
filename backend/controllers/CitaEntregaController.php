@@ -3,10 +3,12 @@
 namespace backend\controllers;
 
 use common\models\CitaEntrega;
+use common\models\PermisosHelpers;
 use backend\models\search\CitaEntregaSearch;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
+use yii\filters\AccessControl;
 
 /**
  * CitaEntregaController implements the CRUD actions for CitaEntrega model.
@@ -21,8 +23,20 @@ class CitaEntregaController extends Controller
         return array_merge(
             parent::behaviors(),
             [
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'allow' => true,
+                            'roles' => ['@'],
+                            'matchCallback' => function ($rule, $action) {
+                                return PermisosHelpers::requerirMinimoRol('Admin');
+                            },
+                        ],
+                    ],
+                ],
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
                     ],

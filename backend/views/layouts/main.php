@@ -33,40 +33,46 @@ FontAwesomeAsset::register($this);
 
 <header id="header">
     <?php
-    // 1. Inicialización segura para evitar el error de "non-object"
+    // 1. Inicialización segura de roles
     $es_admin = false;
+    $es_super_admin = false;
+
     if (!Yii::$app->user->isGuest) {
         $es_admin = PermisosHelpers::requerirMinimoRol('Admin');
+        $es_super_admin = PermisosHelpers::requerirMinimoRol('SuperUsuario');
     }
 
-    // 2. Validación estricta para mostrar el menú Admin
-    if (!Yii::$app->user->isGuest && $es_admin) {
-        NavBar::begin([
-            'brandLabel' => 'UNO Estatus <i class="fa fa-plug"></i> Admin',
-            'brandUrl' => Yii::$app->homeUrl,
-            'options' => [
-                'class' => 'navbar-expand-md navbar-dark bg-dark fixed-top',
-            ],
-        ]);
+    // 2. Título de la barra según el nivel de acceso
+    if (!Yii::$app->user->isGuest && $es_super_admin) {
+        $brandLabel = 'UNO Estatus <i class="fa fa-plug"></i> SuperAdmin';
+    } elseif (!Yii::$app->user->isGuest && $es_admin) {
+        $brandLabel = 'UNO Estatus <i class="fa fa-plug"></i> Admin';
     } else {
-        NavBar::begin([
-            'brandLabel' => 'UNO <i class="fa fa-plug"></i>',
-            'brandUrl' => Yii::$app->homeUrl,
-            'options' => [
-                'class' => 'navbar-expand-md navbar-dark bg-dark fixed-top',
-            ],
-        ]);
+        $brandLabel = 'UNO <i class="fa fa-plug"></i>';
     }
 
-    // 3. Declaración global del menú para evitar variables indefinidas
+    NavBar::begin([
+        'brandLabel' => $brandLabel,
+        'brandUrl' => Yii::$app->homeUrl,
+        'options' => [
+            'class' => 'navbar-expand-md navbar-dark bg-dark fixed-top',
+        ],
+    ]);
+
+    // 3. Declaración global del menú
     $menuItems = [
         ['label' => 'Inicio', 'url' => ['site/index']],
     ];
 
+    // Opciones operativas: visibles para Admin y SuperUsuario
     if (!Yii::$app->user->isGuest && $es_admin) {
         $menuItems[] = ['label' => 'Trámites', 'url' => ['tramite/index']];
         $menuItems[] = ['label' => 'Crear citas', 'url' => ['disponibilidad-cita/index']];
         $menuItems[] = ['label' => 'Citas Agendadas', 'url' => ['cita-entrega/index']];
+    }
+
+    // Opciones de configuración: exclusivas para SuperUsuario
+    if (!Yii::$app->user->isGuest && $es_super_admin) {
         $menuItems[] = ['label' => 'Usuarios', 'url' => ['user/index']];
         $menuItems[] = ['label' => 'Perfiles', 'url' => ['perfil/index']];
         $menuItems[] = ['label' => 'Roles', 'url' => ['rol/index']];
