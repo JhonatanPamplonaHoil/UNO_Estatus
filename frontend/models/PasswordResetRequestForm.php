@@ -7,65 +7,65 @@ namespace frontend\models;
 use common\models\User;
 use yii\base\Model;
 use yii\mail\MailerInterface;
-use common\models\ValorHelpers;
-/**
- * Password reset request form
- */
+
 class PasswordResetRequestForm extends Model
 {
     public string $email = '';
-    /**
-     * {@inheritdoc}
-     */
+
     public function rules(): array
     {
         return [
             ['email', 'trim'],
-            ['email', 'required'],
-            ['email', 'email'],
-            ['email', 'exist',
+            ['email', 'required', 'message' => 'Ingresa tu correo electrónico.'],
+            ['email', 'email', 'message' => 'Ingresa un correo electrónico válido.'],
+            [
+                'email',
+                'exist',
                 'targetClass' => User::class,
-                'filter' => ['estado_id' =>ValorHelpers::getEstadoId('Activo')],
-                'message' => 'There is no user with this email address.',
+                'message' => 'No existe ninguna cuenta registrada con este correo.',
             ],
         ];
     }
 
-    /**
-     * Sends an email with a link, for resetting the password.
-     *
-     * @param MailerInterface $mailer the mailer component.
-     * @param string $supportEmail the support email address.
-     * @param string $appName the application name.
-     *
-     * @return bool whether the email was sent.
-     */
+    public function attributeLabels(): array
+    {
+        return [
+            'email' => 'Correo electrónico',
+        ];
+    }
+
     public function sendEmail(MailerInterface $mailer, string $supportEmail, string $appName): bool
     {
-        $user = User::findOne([
-            'estado_id' => ValorHelpers::getEstadoId('Activo'),
-            'email' => $this->email,
-        ]);
+        $user = User::findByEmail($this->email);
 
         if (!$user) {
             return false;
         }
 
-        if (!User::isPasswordResetTokenValid($user->password_reset_token)) {
-            $user->generatePasswordResetToken();
-            if (!$user->save()) {
-                return false;
-            }
+        // Genera clave de 6 dígitos + timestamp (compatible con isPasswordResetTokenValid)
+        $codigo = (string) random_int(100000, 999999);
+        $user->password_reset_token = $codigo . '_' . time();
+
+        if (!$user->save(false)) {
+            return false;
         }
 
         return $mailer
-            ->compose(
-                ['html' => 'passwordResetToken-html', 'text' => 'passwordResetToken-text'],
-                ['user' => $user],
-            )
-            ->setFrom([$supportEmail => $appName . ' robot'])
+            ->compose()
+            ->setFrom([$supportEmail => $appName])
             ->setTo($this->email)
-            ->setSubject('Password reset for ' . $appName)
+            ->setSubject('Código de recuperación de contraseña - ' . $appName)
+            ->setHtmlBody("
+                <div style='font-family: Arial, sans-serif; color: #333;'>
+                    <h2 style='color: #7d0d30;'>Recuperación de contraseña - UNO</h2>
+                    <p>Hola <b>{$user->username}</b>,</p>
+                    <p>Usa la siguiente clave de verificación para restablecer tu contraseña:</p>
+                    <div style='font-size: 28px; font-weight: bold; letter-spacing: 6px; color: #7d0d30; background: #fcf8f9; padding: 15px; border-radius: 8px; display: inline-block; border: 1px solid #e2d1d6;'>
+                        {$codigo}
+                    </div>
+                    <p style='margin-top: 15px; font-size: 13px; color: #666;'>Si no solicitaste este cambio, puedes ignorar este correo.</p>
+                </div>
+            ")
             ->send();
     }
 }
