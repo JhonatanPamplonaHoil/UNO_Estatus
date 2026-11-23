@@ -1,4 +1,5 @@
 <?php
+
 namespace common\models;
 
 use Yii;
@@ -16,14 +17,18 @@ use backend\models\TipoUsuario;
 use yii\helpers\Url;
 use yii\helpers\Html;
 use common\models\ValorHelpers;
+
 /**
  * User model
  *
  * @property integer $id
  * @property string $username
+ * @property string $apellido_paterno
+ * @property string $apellido_materno
  * @property string $password_hash
  * @property string $password_reset_token
  * @property string $email
+ * @property string $telefono
  * @property string $auth_key
  * @property integer $rol_id
  * @property integer $estado_id
@@ -34,8 +39,6 @@ use common\models\ValorHelpers;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    
-
     public static function tableName()
     {
         return 'user';
@@ -48,7 +51,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             'timestamp' => [
-                'class' => 'yii\behaviors\TimestampBehavior',
+                'class' => TimestampBehavior::class,
                 'attributes' => [
                     ActiveRecord::EVENT_BEFORE_INSERT => ['created_at', 'updated_at'],
                     ActiveRecord::EVENT_BEFORE_UPDATE => ['updated_at'],
@@ -65,34 +68,45 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return [
             ['rol_id', 'default', 'value' => 1],
-            [['rol_id'],'in', 'range'=>array_keys($this->getRolLista())],
+            [['rol_id'], 'in', 'range' => array_keys($this->getRolLista())],
             ['estado_id', 'default', 'value' => ValorHelpers::getEstadoId('Activo')],
-            [['estado_id'],'in', 'range'=>array_keys($this->getEstadoLista())],
+            [['estado_id'], 'in', 'range' => array_keys($this->getEstadoLista())],
             ['tipo_usuario_id', 'default', 'value' => 1],
-            [['tipo_usuario_id'],'in', 'range'=>array_keys($this->getTipoUsuarioLista())],
+            [['tipo_usuario_id'], 'in', 'range' => array_keys($this->getTipoUsuarioLista())],
+
             ['username', 'filter', 'filter' => 'trim'],
             ['username', 'required'],
-            ['username', 'unique'],
             ['username', 'string', 'min' => 2, 'max' => 255],
+
+            [['apellido_paterno', 'apellido_materno'], 'filter', 'filter' => 'trim'],
+            [['apellido_paterno', 'apellido_materno'], 'string', 'max' => 100],
+
+            ['telefono', 'filter', 'filter' => 'trim'],
+            ['telefono', 'string', 'max' => 15],
+
             ['email', 'filter', 'filter' => 'trim'],
             ['email', 'required'],
             ['email', 'email'],
-            ['email', 'unique'],
-
+            ['email', 'unique', 'message' => 'Este correo electrónico ya está registrado.'],
         ];
     }
 
-    /* Las etiquetas de los atributos de su modelo */
+    /**
+     * Las etiquetas de los atributos de su modelo
+     */
     public function attributeLabels()
     {
         return [
-            /* Sus otras etiquetas de atributo */
             'rolNombre' => Yii::t('app', 'Rol'),
             'estadoNombre' => Yii::t('app', 'Estado'),
             'perfilId' => Yii::t('app', 'Perfil'),
             'perfilLink' => Yii::t('app', 'Perfil'),
             'userLink' => Yii::t('app', 'User'),
-            'username' => Yii::t('app', 'User'),
+            'username' => Yii::t('app', 'Nombre de usuario'),
+            'apellido_paterno' => Yii::t('app', 'Apellido paterno'),
+            'apellido_materno' => Yii::t('app', 'Apellido materno'),
+            'email' => Yii::t('app', 'Correo electrónico'),
+            'telefono' => Yii::t('app', 'Teléfono'),
             'tipoUsuarioNombre' => Yii::t('app', 'Tipo Usuario'),
             'tipoUsuarioId' => Yii::t('app', 'Tipo Usuario'),
             'userIdLink' => Yii::t('app', 'ID'),
@@ -117,12 +131,24 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * Encuentra usuario por username
-     * dividida en dos líneas para evitar ajuste de línea * @param string $username
+     *
+     * @param string $username
      * @return static|null
      */
     public static function findByUsername($username)
     {
         return static::findOne(['username' => $username, 'estado_id' => ValorHelpers::getEstadoId('Activo')]);
+    }
+
+    /**
+     * Encuentra usuario activo por correo electrónico
+     *
+     * @param string $email
+     * @return static|null
+     */
+    public static function findByEmail($email)
+    {
+        return static::findOne(['email' => $email, 'estado_id' => ValorHelpers::getEstadoId('Activo')]);
     }
 
     /**
@@ -193,7 +219,7 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return Yii::$app->security->validatePassword($password, $this->password_hash);
     }
-    
+
     /**
      * Genera hash de password a partir de password y la establece en el modelo
      *
@@ -222,7 +248,6 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * Genera nueva clave de restablecimiento de password
-     * dividida en dos líneas para evitar ajuste de línea
      */
     public function generatePasswordResetToken()
     {
@@ -241,127 +266,127 @@ class User extends ActiveRecord implements IdentityInterface
     {
         return $this->hasOne(Perfil::className(), ['user_id' => 'id']);
     }
+
     public function getUsers()
     {
-       return $this->hasMany(User::className(), ['rol_id' => 'id']);
-    }   
+        return $this->hasMany(User::className(), ['rol_id' => 'id']);
+    }
 
     /**
-    * relación get rol
-    *
-    */
+     * relación get rol
+     */
     public function getRol()
     {
-     return $this->hasOne(Rol::className(), ['id' => 'rol_id']);
+        return $this->hasOne(Rol::className(), ['id' => 'rol_id']);
     }
+
     /**
-    * get rol nombre
-    *
-    */
+     * get rol nombre
+     */
     public function getRolNombre()
     {
-     return $this->rol ? $this->rol->rol_nombre : '- sin rol -';
+        return $this->rol ? $this->rol->rol_nombre : '- sin rol -';
     }
+
     /**
-    * get lista de roles para lista desplegable
-    */
+     * get lista de roles para lista desplegable
+     */
     public static function getRolLista()
     {
-     $dropciones = Rol::find()->asArray()->all();
-     return ArrayHelper::map($dropciones, 'id', 'rol_nombre');
+        $dropciones = Rol::find()->asArray()->all();
+        return ArrayHelper::map($dropciones, 'id', 'rol_nombre');
     }
+
     /**
-   * relación get estado
-   *
-   */
+     * relación get estado
+     */
     public function getEstado()
     {
-     return $this->hasOne(Estado::className(), ['id' => 'estado_id']);
+        return $this->hasOne(Estado::className(), ['id' => 'estado_id']);
     }
+
     /**
-    * * get estado nombre
-    *
-    */
+     * get estado nombre
+     */
     public function getEstadoNombre()
     {
-     return $this->estado ? $this->estado->estado_nombre : '- sin estado -';
+        return $this->estado ? $this->estado->estado_nombre : '- sin estado -';
     }
-   /**
-   * get lista de estados para lista desplegable
-   */
-   public static function getEstadoLista()
-   {
-     $dropciones = Estado::find()->asArray()->all();
-     return ArrayHelper::map($dropciones, 'id', 'estado_nombre');
-   }
-   public function getTipoUsuario()
+
+    /**
+     * get lista de estados para lista desplegable
+     */
+    public static function getEstadoLista()
     {
-     return $this->hasOne(TipoUsuario::className(), ['id' => 'tipo_usuario_id']);
+        $dropciones = Estado::find()->asArray()->all();
+        return ArrayHelper::map($dropciones, 'id', 'estado_nombre');
     }
-   /**
-   * get tipo usuario nombre
-   *
-   */
-   public function getTipoUsuarioNombre()
-   {
-     return $this->tipoUsuario ? $this->tipoUsuario->tipo_usuario_nombre : '- sin tipo usuario -';
-   }
-   /**
-   * get lista de tipos de usuario para lista desplegable
-   */
-   public static function getTipoUsuarioLista()
-   {
-     $dropciones = TipoUsuario::find()->asArray()->all();
-     return ArrayHelper::map($dropciones, 'id', 'tipo_usuario_nombre');
-   }
-   /**
-   * get tipo usuario id
-   *
-   */
-   public function getTipoUsuarioId()
-   {
-     return $this->tipoUsuario ? $this->tipoUsuario->id : 'ninguno';
-   }
-   /**
-   * @getPerfilId
-   *
-   */
-   public function getPerfilId()
-   {
-     return $this->perfil ? $this->perfil->id : 'ninguno';
-   }
-   /**
-   * @getPerfilLink
-   *
-   */
 
-   public function getPerfilLink()
-   {
-     $url = Url::to(['perfil/view', 'id'=>$this->perfilId]);
-     $opciones = [];
-     return Html::a($this->perfil ? 'perfil' : 'ninguno', $url, $opciones);
-   }
-   /**
-   * get user id Link
-   *
-   */
-   public function getUserIdLink()
-   {
-     $url = Url::to(['user/update', 'id'=>$this->id]);
-     $opciones = [];
-     return Html::a($this->id, $url, $opciones);
-   }
-   /**
-   * @getUserLink
-   *
-   */
+    public function getTipoUsuario()
+    {
+        return $this->hasOne(TipoUsuario::className(), ['id' => 'tipo_usuario_id']);
+    }
 
-   public function getUserLink()
-   {
-     $url = Url::to(['user/view', 'id'=>$this->id]);
-     $opciones = [];
-     return Html::a($this->username, $url, $opciones);
-   }
+    /**
+     * get tipo usuario nombre
+     */
+    public function getTipoUsuarioNombre()
+    {
+        return $this->tipoUsuario ? $this->tipoUsuario->tipo_usuario_nombre : '- sin tipo usuario -';
+    }
 
-   
-} 
+    /**
+     * get lista de tipos de usuario para lista desplegable
+     */
+    public static function getTipoUsuarioLista()
+    {
+        $dropciones = TipoUsuario::find()->asArray()->all();
+        return ArrayHelper::map($dropciones, 'id', 'tipo_usuario_nombre');
+    }
+
+    /**
+     * get tipo usuario id
+     */
+    public function getTipoUsuarioId()
+    {
+        return $this->tipoUsuario ? $this->tipoUsuario->id : 'ninguno';
+    }
+
+    /**
+     * @getPerfilId
+     */
+    public function getPerfilId()
+    {
+        return $this->perfil ? $this->perfil->id : 'ninguno';
+    }
+
+    /**
+     * @getPerfilLink
+     */
+    public function getPerfilLink()
+    {
+        $url = Url::to(['perfil/view', 'id' => $this->perfilId]);
+        $opciones = [];
+        return Html::a($this->perfil ? 'perfil' : 'ninguno', $url, $opciones);
+    }
+
+    /**
+     * get user id Link
+     */
+    public function getUserIdLink()
+    {
+        $url = Url::to(['user/update', 'id' => $this->id]);
+        $opciones = [];
+        return Html::a($this->id, $url, $opciones);
+    }
+
+    /**
+     * @getUserLink
+     */
+    public function getUserLink()
+    {
+        $url = Url::to(['user/view', 'id' => $this->id]);
+        $opciones = [];
+        return Html::a($this->username, $url, $opciones);
+    }
+}

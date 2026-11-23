@@ -77,8 +77,6 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
 .custom-input-group .form-control {
     border-color: #e2d1d6;
     background-color: #fcf8f9;
-    border-top-right-radius: 0.6rem !important;
-    border-bottom-right-radius: 0.6rem !important;
     padding: 0.65rem 0.9rem;
     font-size: 0.95rem;
     color: #2b030f;
@@ -180,8 +178,33 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
                         ])->textInput()->label('Nombre de usuario', $labelOptions) ?>
                     </div>
 
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <?= $form->field($model, 'apellido_paterno', [
+                                'options' => ['class' => 'mb-0'],
+                                'template' => sprintf($htmlIcon, '📝'),
+                                'inputOptions' => [
+                                    'class' => 'form-control',
+                                    'placeholder' => 'Apellido paterno',
+                                ],
+                            ])->textInput()->label('Apellido paterno', $labelOptions) ?>
+                        </div>
+
+                        <div class="col-md-6">
+                            <?= $form->field($model, 'apellido_materno', [
+                                'options' => ['class' => 'mb-0'],
+                                'template' => sprintf($htmlIcon, '📝'),
+                                'inputOptions' => [
+                                    'class' => 'form-control',
+                                    'placeholder' => 'Apellido materno',
+                                ],
+                            ])->textInput()->label('Apellido materno', $labelOptions) ?>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
                         <?= $form->field($model, 'email', [
+                            'enableAjaxValidation' => true, // <-- Valida en tiempo real contra la BD
                             'options' => ['class' => 'mb-0'],
                             'template' => sprintf($htmlIcon, '✉️'),
                             'inputOptions' => [
@@ -191,15 +214,39 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
                         ])->textInput()->label('Correo electrónico', $labelOptions) ?>
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-3">
+                        <?= $form->field($model, 'telefono', [
+                            'options' => ['class' => 'mb-0'],
+                            'template' => sprintf($htmlIcon, '📱'),
+                            'inputOptions' => [
+                                'class' => 'form-control',
+                                'placeholder' => 'Ej. 9851234567',
+                                'maxlength' => 10,
+                                'type' => 'tel',
+                            ],
+                        ])->textInput()->label('Número telefónico', $labelOptions) ?>
+                    </div>
+
+                    <div class="mb-3">
                         <?= $form->field($model, 'password', [
                             'options' => ['class' => 'mb-0'],
-                            'template' => sprintf($htmlIcon, '🔒'),
+                            'template' => '{label}<div class="input-group custom-input-group"><span class="input-group-text custom-icon" aria-hidden="true">🔒</span>{input}<span class="input-group-text bg-white d-none pass-status-icon"></span></div>{error}{hint}',
                             'inputOptions' => [
                                 'class' => 'form-control',
                                 'placeholder' => '••••••••',
                             ],
                         ])->passwordInput()->label('Contraseña', $labelOptions) ?>
+                    </div>
+
+                    <div class="mb-4">
+                        <?= $form->field($model, 'password_repeat', [
+                            'options' => ['class' => 'mb-0'],
+                            'template' => '{label}<div class="input-group custom-input-group"><span class="input-group-text custom-icon" aria-hidden="true">🔑</span>{input}<span class="input-group-text bg-white d-none pass-status-icon"></span></div>{error}{hint}',
+                            'inputOptions' => [
+                                'class' => 'form-control',
+                                'placeholder' => 'Repite tu contraseña',
+                            ],
+                        ])->passwordInput()->label('Confirmar contraseña', $labelOptions) ?>
                     </div>
 
                     <div class="d-grid mb-3">
@@ -225,3 +272,42 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
         </div>
     </div>
 </div>
+
+<?php
+$this->registerJs(<<<JS
+const passInput = $('#signupform-password');
+const repeatInput = $('#signupform-password_repeat');
+const statusIcons = $('.pass-status-icon');
+const repeatError = repeatInput.closest('.field-signupform-password_repeat').find('.invalid-feedback');
+
+function validarCoincidencia() {
+    const pass = passInput.val();
+    const repeat = repeatInput.val();
+
+    if (repeat.length === 0) {
+        statusIcons.addClass('d-none').text('');
+        return;
+    }
+
+    statusIcons.removeClass('d-none');
+
+    if (pass === repeat && pass.length > 0) {
+        statusIcons.text('✅');
+        repeatInput.removeClass('is-invalid').addClass('is-valid');
+        passInput.removeClass('is-invalid').addClass('is-valid');
+        repeatError.text('').hide();
+    } else {
+        statusIcons.text('❌');
+        repeatInput.removeClass('is-valid').addClass('is-invalid');
+        repeatError.text('Las contraseñas no coinciden.').show();
+    }
+}
+
+passInput.on('input', validarCoincidencia);
+repeatInput.on('input', validarCoincidencia);
+
+$('#form-signup').on('beforeSubmit', function () {
+    return confirm('¿Está seguro de crear la cuenta?');
+});
+JS);
+?>

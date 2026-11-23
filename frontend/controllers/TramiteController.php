@@ -74,12 +74,22 @@ class TramiteController extends Controller
     }
 
     /**
-     * Registro de una nueva solicitud de trámite.
+     * Registro de una nueva solicitud de trámite (limitado a 1 por alumno).
      *
      * @return string|\yii\web\Response
      */
     public function actionCreate()
     {
+        // Bloquear si el alumno ya cuenta con un trámite registrado
+        $yaTieneTramite = TramiteTitulacion::find()
+            ->where(['user_id' => Yii::$app->user->id])
+            ->exists();
+
+        if ($yaTieneTramite) {
+            Yii::$app->session->setFlash('warning', 'Ya cuentas con un trámite de titulación registrado. Solo se permite una solicitud por alumno.');
+            return $this->redirect(['index']);
+        }
+
         $model = new TramiteTitulacion();
 
         // Valores asignados por el sistema (no manipulables desde el formulario)

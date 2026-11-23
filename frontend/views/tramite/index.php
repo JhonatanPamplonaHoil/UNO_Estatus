@@ -12,6 +12,11 @@ use yii\grid\GridView;
 
 $this->title = 'Mis Trámites de Titulación';
 $this->params['breadcrumbs'][] = $this->title;
+
+// Verificar si el alumno ya cuenta con un trámite registrado
+$yaTieneTramite = TramiteTitulacion::find()
+    ->where(['user_id' => Yii::$app->user->id])
+    ->exists();
 ?>
 
 <style>
@@ -121,7 +126,13 @@ $this->params['breadcrumbs'][] = $this->title;
                 <p class="mb-0 opacity-75 small">Consulta y monitorea el estado de tus solicitudes de titulación</p>
             </div>
             <div>
-                <?= Html::a('➕ Nueva Solicitud de Trámite', ['create'], ['class' => 'btn btn-uno-success d-inline-flex align-items-center']) ?>
+                <?php if (!$yaTieneTramite): ?>
+                    <?= Html::a('➕ Nueva Solicitud de Trámite', ['create'], ['class' => 'btn btn-uno-success d-inline-flex align-items-center']) ?>
+                <?php else: ?>
+                    <span class="badge bg-light text-dark px-3 py-2 rounded-pill">
+                         Trámite ya registrado
+                    </span>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -170,7 +181,7 @@ $this->params['breadcrumbs'][] = $this->title;
                         'created_at:date',
 
                         [
-                            'class' => ActionColumn::className(),
+                            'class' => ActionColumn::class,
                             'template' => '{view}', // El alumno solo tiene permitido ver el detalle
                             'urlCreator' => function ($action, TramiteTitulacion $model, $key, $index, $column) {
                                 return Url::toRoute([$action, 'id' => $model->id]);

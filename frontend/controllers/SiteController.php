@@ -13,6 +13,7 @@ use frontend\models\SignupForm;
 use frontend\models\VerifyEmailForm;
 use Yii;
 use yii\base\InvalidArgumentException;
+use yii\bootstrap5\ActiveForm;
 use yii\captcha\CaptchaAction;
 use yii\filters\AccessControl;
 use yii\filters\VerbFilter;
@@ -179,6 +180,11 @@ class SiteController extends Controller
     {
         $model = new SignupForm();
 
+        // Validación en tiempo real (AJAX) para correo y usuario duplicado
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            return $this->asJson(ActiveForm::validate($model));
+        }
+
         $signed = $model->load(Yii::$app->request->post()) && $model->signup(
             $this->mailer,
             Yii::$app->params['supportEmail'],
@@ -186,7 +192,7 @@ class SiteController extends Controller
         );
 
         if ($signed) {
-            Yii::$app->session->setFlash('success', 'Thank you for registration. Please check your inbox for verification email.');
+            Yii::$app->session->setFlash('success', 'Tu cuenta ha sido creada exitosamente.');
             return $this->goHome();
         }
 
