@@ -20,13 +20,13 @@ return [
         'user' => [
             'identityClass' => \common\models\User::class,
             'enableAutoLogin' => false, // Desactivado para que no ignore el timeout
-            'authTimeout' => 3600,      // Cierra sesión tras 1 hora de inactividad
+            'authTimeout' => 1200,      // Cierra sesión tras 1 hora de inactividad
             'identityCookie' => ['name' => '_identity-backend', 'httpOnly' => true],
         ],
         'session' => [
             // this is the name of the session cookie used for login on the backend
             'name' => 'advanced-backend',
-            'timeout' => 3600,          // Sincroniza el tiempo de vida de la sesión
+            'timeout' => 1200,          // Sincroniza el tiempo de vida de la sesión
         ],
         'log' => [
             'traceLevel' => YII_DEBUG ? 3 : 0,
