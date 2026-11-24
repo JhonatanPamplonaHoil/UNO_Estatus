@@ -38,7 +38,8 @@ class PerfilSearch extends Perfil
     public function attributeLabels()
     {
         return [
-            'genero_id' => 'Genero',
+            'genero_id' => 'Género',
+            'apellido' => 'Apellidos',
         ];
     }
 
@@ -50,7 +51,7 @@ class PerfilSearch extends Perfil
      */
     public function search($params)
     {
-        $query = Perfil::find();
+        $query = Perfil::find()->joinWith(['user', 'genero']);
 
         $dataProvider = new ActiveDataProvider([
             'query' => $query,
@@ -60,75 +61,81 @@ class PerfilSearch extends Perfil
             'attributes' => [
                 'id',
                 'nombre',
-                'apellido',
+                'apellido' => [
+                    'asc' => ['user.apellido_paterno' => SORT_ASC, 'user.apellido_materno' => SORT_ASC],
+                    'desc' => ['user.apellido_paterno' => SORT_DESC, 'user.apellido_materno' => SORT_DESC],
+                    'label' => 'Apellidos',
+                ],
                 'fecha_nacimiento',
                 'generoNombre' => [
                     'asc' => ['genero.genero_nombre' => SORT_ASC],
                     'desc' => ['genero.genero_nombre' => SORT_DESC],
-                    'label' => 'Genero'
+                    'label' => 'Género',
                 ],
                 'perfilIdLink' => [
                     'asc' => ['perfil.id' => SORT_ASC],
                     'desc' => ['perfil.id' => SORT_DESC],
-                    'label' => 'ID'
+                    'label' => 'ID',
                 ],
                 'userLink' => [
                     'asc' => ['user.username' => SORT_ASC],
                     'desc' => ['user.username' => SORT_DESC],
-                    'label' => 'User'
+                    'label' => 'User',
                 ],
-            ]
+            ],
         ]);
 
-        if (!($this->load($params) && $this->validate())) {$query->joinWith(['genero'])
-                  ->joinWith(['user']);
+        if (!($this->load($params) && $this->validate())) {
             return $dataProvider;
         }
 
         $this->addSearchParameter($query, 'id');
         $this->addSearchParameter($query, 'nombre', true);
-        $this->addSearchParameter($query, 'apellido', true);
-        $this->addSearchParameter($query, 'fecha_nacimiento');
+        $this->addSearchParameter($query, 'fecha_nacimiento', true);
         $this->addSearchParameter($query, 'genero_id');
         $this->addSearchParameter($query, 'created_at');
         $this->addSearchParameter($query, 'updated_at');
         $this->addSearchParameter($query, 'user_id');
 
-        // filter by genero nombre
-        $query->joinWith(['genero' => function ($q) {
-            $q->andFilterWhere(['=', 'genero.genero_nombre',$this->generoNombre]);
-        }])
-        // filtrar por usuario (Corregido de $this->user a$this->userId)
-        ->joinWith(['user' => function ($q) {
-            $q->andFilterWhere(['=', 'user.id',$this->userId]);
-        }]);
+        // Filtro de apellidos buscando en la tabla user y como respaldo en perfil.apellido
+        if (trim((string) $this->apellido) !== '') {
+            $apellido = trim((string) $this->apellido);
+            $query->andFilterWhere([
+                'or',
+                ['like', 'user.apellido_paterno', $apellido],
+                ['like', 'user.apellido_materno', $apellido],
+                ['like', "CONCAT(COALESCE(user.apellido_paterno, ''), ' ', COALESCE(user.apellido_materno, ''))", $apellido],
+                ['like', 'perfil.apellido', $apellido],
+            ]);
+        }
+
+        // Filtro por nombre de género y por ID de usuario
+        $query->andFilterWhere(['like', 'genero.genero_nombre', $this->generoNombre]);
+        $query->andFilterWhere(['=', 'user.id', $this->userId]);
 
         return $dataProvider;
     }
 
-    protected function addSearchParameter($query, $attribute,$partialMatch = false)
+    protected function addSearchParameter($query, $attribute, $partialMatch = false)
     {
-        if (($pos = strrpos($attribute, '.')) !== false) {$modelAttribute = substr($attribute,$pos + 1);
+        if (($pos = strrpos($attribute, '.')) !== false) {
+            $modelAttribute = substr($attribute, $pos + 1);
         } else {
-            $modelAttribute =$attribute;
+            $modelAttribute = $attribute;
         }
 
         $value = $this->$modelAttribute;
 
-        // Se agregó (string) para máxima compatibilidad con las últimas versiones de PHP
-        if (trim((string)$value) === '') {
+        if (trim((string) $value) === '') {
             return;
         }
 
-        /*
-         * La siguiente línea se agrega para un correcto uso de alias
-         * de columnas para que el filtrado funcione en el self join
-         */
         $attribute = "perfil.$attribute";
 
-        if ($partialMatch) {$query->andWhere(['like', $attribute,$value]);
+        if ($partialMatch) {
+            $query->andWhere(['like', $attribute, $value]);
         } else {
-            $query->andWhere([$attribute =>$value]);
+            $query->andWhere([$attribute => $value]);
         }
     }
 }

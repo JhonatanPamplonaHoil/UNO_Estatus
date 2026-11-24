@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
-use \yii\bootstrap5\Accordion;
+use yii\bootstrap5\Accordion;
 
 /**
  * @var yii\web\View $this
@@ -169,14 +169,14 @@ $this->registerJs("
 
     <!-- Acordeón de búsqueda avanzada original -->
     <div class="uno-accordion mb-4">
-        <?php echo Accordion::widget([
+        <?= Accordion::widget([
             'items' => [
                 [
                     'label' => '🔍 Filtros de Búsqueda Avanzada (Search)',
                     'content' => $this->render('_search', ['model' => $searchModel]),
                 ],
             ]
-        ]); ?>
+        ]) ?>
     </div>
 
     <!-- Tarjeta principal con Buscador Rápido + GridView -->
@@ -205,20 +205,36 @@ $this->registerJs("
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],
 
-                //'id',
-                ['attribute'=>'perfilIdLink', 'format'=>'raw'],
-                ['attribute'=>'userLink', 'format'=>'raw'],
+                ['attribute' => 'perfilIdLink', 'format' => 'raw'],
+                ['attribute' => 'userLink', 'format' => 'raw'],
                 'nombre',
-                'apellido',
-                'fecha_nacimiento',
+                [
+                    'attribute' => 'apellido',
+                    'label' => 'Apellidos',
+                    'format' => 'raw',
+                    'value' => static function ($model) {
+                        if ($model->user) {
+                            $apellidos = trim(($model->user->apellido_paterno ?? '') . ' ' . ($model->user->apellido_materno ?? ''));
+                            if ($apellidos !== '') {
+                                return Html::encode($apellidos);
+                            }
+                        }
+
+                        if (!empty($model->apellido)) {
+                            return Html::encode($model->apellido);
+                        }
+
+                        return '<span class="text-muted fst-italic">(no definido)</span>';
+                    },
+                ],
+                [
+                    'attribute' => 'fecha_nacimiento',
+                    'format' => ['date', 'php:d/m/Y'],
+                ],
                 'generoNombre',
                 ['class' => 'yii\grid\ActionColumn'],
-                 
-                // 'created_at',
-                // 'updated_at',
-                // 'user_id',
             ],
-        ]); ?>
+        ]) ?>
 
     </div>
 

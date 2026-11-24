@@ -171,7 +171,6 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
                             'options' => ['class' => 'mb-0'],
                             'template' => sprintf($htmlIcon, '👤'),
                             'inputOptions' => [
-                                'autofocus' => true,
                                 'class' => 'form-control',
                                 'placeholder' => 'Nombre de usuario',
                             ],

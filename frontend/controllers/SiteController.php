@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace frontend\controllers;
 
 use common\models\LoginForm;
-use frontend\models\ContactForm;
 use frontend\models\PasswordResetRequestForm;
+use frontend\models\ReporteFallaForm;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
@@ -133,15 +133,24 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays contact page.
+     * Muestra y procesa el formulario de reporte de fallas del sistema.
      *
      * @return string|Response
      */
-    public function actionContact(): string|Response
+    public function actionReportarFalla(): string|Response
     {
-        $model = new ContactForm();
+        $model = new ReporteFallaForm();
+
+        // Autocompletar datos si el usuario ya inició sesión
+        if (!Yii::$app->user->isGuest) {
+            /** @var \common\models\User $user */
+            $user = Yii::$app->user->identity;
+            $model->name = trim($user->username . ' ' . ($user->apellido_paterno ?? ''));
+            $model->email = (string) $user->email;
+        }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $guardado = $model->guardarReporte();
             $sent = $model->sendEmail(
                 $this->mailer,
                 Yii::$app->params['adminEmail'],
@@ -149,16 +158,16 @@ class SiteController extends Controller
                 Yii::$app->params['senderName'],
             );
 
-            if ($sent) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
+            if ($guardado || $sent) {
+                Yii::$app->session->setFlash('success', 'Tu reporte de falla ha sido registrado correctamente. El equipo técnico lo revisará a la brevedad.');
             } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
+                Yii::$app->session->setFlash('error', 'Ocurrió un error al enviar tu reporte. Inténtalo nuevamente.');
             }
 
             return $this->refresh();
         }
 
-        return $this->render('contact', [
+        return $this->render('reportar-falla', [
             'model' => $model,
         ]);
     }

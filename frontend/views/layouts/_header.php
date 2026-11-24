@@ -18,8 +18,8 @@ $items = [
         'url' => ['/site/about'],
     ],
     [
-        'label' => 'Contact',
-        'url' => ['/site/contact'],
+        'label' => 'Reportar falla',
+        'url' => ['/site/reportar-falla'],
     ],
     [
         'label' => 'Mis trámites',
