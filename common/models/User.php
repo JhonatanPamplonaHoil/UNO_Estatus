@@ -66,6 +66,8 @@ class User extends ActiveRecord implements IdentityInterface
      */
     public function rules()
     {
+        $trimFilter = static fn ($value) => is_string($value) ? trim($value) : $value;
+
         return [
             ['rol_id', 'default', 'value' => 1],
             [['rol_id'], 'in', 'range' => array_keys($this->getRolLista())],
@@ -74,17 +76,17 @@ class User extends ActiveRecord implements IdentityInterface
             ['tipo_usuario_id', 'default', 'value' => 1],
             [['tipo_usuario_id'], 'in', 'range' => array_keys($this->getTipoUsuarioLista())],
 
-            ['username', 'filter', 'filter' => 'trim'],
+            ['username', 'filter', 'filter' => $trimFilter, 'skipOnEmpty' => true],
             ['username', 'required'],
             ['username', 'string', 'min' => 2, 'max' => 255],
 
-            [['apellido_paterno', 'apellido_materno'], 'filter', 'filter' => 'trim'],
+            [['apellido_paterno', 'apellido_materno'], 'filter', 'filter' => $trimFilter, 'skipOnEmpty' => true],
             [['apellido_paterno', 'apellido_materno'], 'string', 'max' => 100],
 
-            ['telefono', 'filter', 'filter' => 'trim'],
+            ['telefono', 'filter', 'filter' => $trimFilter, 'skipOnEmpty' => true],
             ['telefono', 'string', 'max' => 15],
 
-            ['email', 'filter', 'filter' => 'trim'],
+            ['email', 'filter', 'filter' => $trimFilter, 'skipOnEmpty' => true],
             ['email', 'required'],
             ['email', 'email'],
             ['email', 'unique', 'message' => 'Este correo electrónico ya está registrado.'],

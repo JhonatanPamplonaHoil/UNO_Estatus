@@ -172,9 +172,6 @@ $this->registerJs("
                     <input type="text" id="unoQuickSearchEstado" class="form-control uno-quick-search" placeholder="Búsqueda rápida por ID, nombre de estado o valor...">
                 </div>
             </div>
-            <div class="col-md-auto text-muted small">
-                Filtra al instante mientras escribes o usa las casillas de cada columna.
-            </div>
         </div>
 
         <?= GridView::widget([
