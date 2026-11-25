@@ -6,11 +6,10 @@ use common\models\PermisosHelpers;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 use yii\helpers\Html;
-use yii\bootstrap5\Breadcrumbs;
 
 /**
- * @var \yii\web\View $this
- * @var string $content
+- @var \yii\web\View $this
+- @var string $content
  */
 
 AppAsset::register($this);
@@ -104,11 +103,14 @@ FontAwesomeAsset::register($this);
 
 <main id="main" class="flex-grow-1" role="main" style="margin-top: 60px;">
     <div class="container">
-        <?= Breadcrumbs::widget([
-            'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
-        ]) ?>
         <?= $content ?>
     </div>
+
+    <?php if (Yii::$app->controller->action->id !== 'index'): ?>
+        <button type="button" class="btn btn-regresar-global" title="Regresar" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '<?= Yii::$app->homeUrl ?>'; }">
+            <i class="fa fa-arrow-left" aria-hidden="true"></i> <span>Regresar</span>
+        </button>
+    <?php endif; ?>
 </main>
 
 <footer class="footer mt-auto py-3 text-muted">

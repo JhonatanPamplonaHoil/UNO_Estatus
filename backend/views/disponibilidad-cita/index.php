@@ -24,6 +24,7 @@ $this->registerCss("
     }
 
     .disponibilidad-cita-index {
+        padding-top: 0.5rem;
         padding-bottom: 2rem;
     }
 
@@ -189,12 +190,26 @@ $this->registerCss("
         box-shadow: 0 4px 8px rgba(107, 29, 58, 0.22);
     }
 
+    /* Fix de capas para Modales y Backdrop de Bootstrap */
+    .modal-backdrop {
+        z-index: 10550 !important;
+    }
+
+    .uno-modal {
+        z-index: 10560 !important;
+    }
+
+    .swal2-container {
+        z-index: 10600 !important;
+    }
+
     /* Estilo institucional para los Modales */
     .uno-modal .modal-content {
         border: none;
         border-radius: 14px;
         overflow: hidden;
-        box-shadow: 0 12px 32px rgba(44, 36, 39, 0.2);
+        box-shadow: 0 12px 32px rgba(44, 36, 39, 0.25);
+        background-color: #ffffff;
     }
 
     .uno-modal .modal-header {
@@ -371,10 +386,20 @@ $this->registerCss("
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const calendarEl = document.getElementById('calendar');
-    
+    const modalCrearEl = document.getElementById('modalCrear');
+    const modalEditarEl = document.getElementById('modalEditar');
+
+    // Mover modales directamente a <body> para evitar conflictos con contenedores/z-index
+    if (modalCrearEl && modalCrearEl.parentElement !== document.body) {
+        document.body.appendChild(modalCrearEl);
+    }
+    if (modalEditarEl && modalEditarEl.parentElement !== document.body) {
+        document.body.appendChild(modalEditarEl);
+    }
+
     // Instancias de Modales de Bootstrap 5
-    const modalCrear = new bootstrap.Modal(document.getElementById('modalCrear'));
-    const modalEditar = new bootstrap.Modal(document.getElementById('modalEditar'));
+    const modalCrear = new bootstrap.Modal(modalCrearEl);
+    const modalEditar = new bootstrap.Modal(modalEditarEl);
 
     const calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',

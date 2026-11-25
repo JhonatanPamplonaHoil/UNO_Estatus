@@ -257,3 +257,291 @@ a.desc:after {
         max-width: 50%;
     }
 }
+
+/* =========================================================
+   FONDO GLOBAL, BARRA INSTITUCIONAL Y ADAPTABILIDAD RESPONSIVA
+   ========================================================= */
+
+/* Fondo global con cvino.png solo en pantallas con menú (no afecta al login) */
+body:has(#header) {
+    background-image: url('../images/cvino.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+/* Barra superior en rojo vino institucional con detalle dorado */
+body:has(#header) #header .navbar.bg-dark {
+    background: linear-gradient(90deg, #4a0814 0%, #6b0f1a 55%, #4a0814 100%) !important;
+    border-bottom: 2px solid #c59b27;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    backdrop-filter: blur(10px);
+}
+
+/* Alineación centrada entre marca y enlaces */
+body:has(#header) #header .navbar > .container,
+body:has(#header) #header .navbar > .container-fluid {
+    align-items: center;
+}
+
+/* Marca principal: UNO Estatus SuperAdmin / Admin */
+body:has(#header) #header .navbar-brand {
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.3px;
+    color: #ffffff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(243, 210, 122, 0.38);
+    white-space: nowrap;
+    transition: all 0.25s ease;
+}
+
+body:has(#header) #header .navbar-brand:hover {
+    background: rgba(243, 210, 122, 0.16);
+    border-color: #f3d27a;
+}
+
+/* Botón hamburguesa estilizado en móvil/tablet */
+body:has(#header) #header .navbar-toggler {
+    border: 1px solid rgba(243, 210, 122, 0.55);
+    padding: 6px 10px;
+    border-radius: 8px;
+}
+
+body:has(#header) #header .navbar-toggler:focus {
+    box-shadow: 0 0 0 0.2rem rgba(243, 210, 122, 0.3);
+}
+
+/* Contenedor de enlaces en escritorio */
+body:has(#header) #header .navbar-nav {
+    gap: 3px;
+    align-items: center;
+}
+
+/* Enlaces tipo píldora sin saltos de línea incómodos */
+body:has(#header) #header .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 6px 11px !important;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+body:has(#header) #header .navbar-nav .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.14);
+}
+
+/* Pestaña activa resaltada en tono dorado institucional */
+body:has(#header) #header .navbar-nav .nav-link.active {
+    color: #3a060f !important;
+    background: linear-gradient(135deg, #f3d27a 0%, #d4a638 100%);
+    font-weight: 700;
+    box-shadow: 0 3px 10px rgba(212, 166, 56, 0.35);
+}
+
+/* Botón Salir diferenciado */
+body:has(#header) #header .navbar-nav .nav-link.logout {
+    margin-left: 6px;
+    color: #ffe3e3 !important;
+    background-color: rgba(220, 53, 69, 0.28);
+    border: 1px solid rgba(255, 180, 180, 0.35);
+    border-radius: 20px;
+    padding: 6px 14px !important;
+    font-weight: 600;
+}
+
+body:has(#header) #header .navbar-nav .nav-link.logout:hover {
+    background-color: #dc3545;
+    border-color: #ffccd2;
+    color: #ffffff !important;
+}
+
+/* Contenedor principal translúcido tipo cristal */
+body:has(#header) main > .container {
+    background-color: rgba(255, 255, 255, 0.91);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 16px;
+    padding: 24px 26px 30px;
+    margin-top: 28px;
+    margin-bottom: 32px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+}
+
+/* =========================================================
+   BOTÓN FLOTANTE FIJO EN EL MARGEN DERECHO CON ICONO
+   ========================================================= */
+.btn-regresar-global {
+    position: fixed;
+    top: 78px;
+    right: 12px;
+    z-index: 1020;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, #6b0f1a 0%, #4a0814 100%);
+    color: #ffffff !important;
+    border: 1.5px solid #c59b27;
+    border-radius: 50px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.32);
+    transition: all 0.25s ease;
+}
+
+.btn-regresar-global i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #f3d27a;
+    font-size: 0.85rem;
+    transition: transform 0.2s ease;
+}
+
+.btn-regresar-global:hover {
+    background: linear-gradient(135deg, #821320 0%, #5c0a18 100%);
+    color: #f3d27a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(74, 8, 20, 0.45);
+}
+
+.btn-regresar-global:hover i {
+    transform: translateX(-3px);
+}
+
+/* En celular se vuelve un botón circular compacto */
+@media (max-width: 767.98px) {
+    .btn-regresar-global {
+        top: 72px;
+        right: 10px;
+        padding: 10px 12px;
+    }
+
+    .btn-regresar-global span {
+        display: none;
+    }
+}
+
+/* Ocultar el botón únicamente en la portada principal (Inicio) */
+body:has(.site-index) .btn-regresar-global {
+    display: none;
+}
+
+/* Tarjetas internas y tablas responsivas para evitar desbordes */
+body:has(#header) .card {
+    border: 1px solid rgba(107, 15, 26, 0.15);
+    border-radius: 12px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    background-color: rgba(255, 255, 255, 0.96);
+    overflow: hidden;
+}
+
+body:has(#header) .grid-view,
+body:has(#header) .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Pie de página */
+body:has(#header) footer.footer {
+    background-color: rgba(30, 5, 10, 0.82) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    border-top: 1px solid rgba(197, 155, 39, 0.35);
+}
+
+body:has(#header) footer.footer a {
+    color: #f3d27a;
+}
+
+/* =========================================================
+   REGLAS RESPONSIVAS (VENTANA REDUCIDA, TABLET Y MÓVIL)
+   ========================================================= */
+
+/* Pantallas medianas / laptop chica (evita que los 9 enlaces choquen) */
+@media (min-width: 768px) and (max-width: 1199.98px) {
+    body:has(#header) #header .navbar-brand {
+        font-size: 0.98rem;
+        padding: 5px 10px;
+    }
+
+    body:has(#header) #header .navbar-nav {
+        gap: 2px;
+    }
+
+    body:has(#header) #header .navbar-nav .nav-link {
+        font-size: 0.8rem;
+        padding: 5px 7px !important;
+    }
+
+    body:has(#header) #header .navbar-nav .nav-link.logout {
+        margin-left: 3px;
+        padding: 5px 10px !important;
+    }
+}
+
+/* Ventana estrecha y dispositivos móviles (< 768px) */
+@media (max-width: 767.98px) {
+    body:has(#header) {
+        background-attachment: scroll;
+    }
+
+    body:has(#header) #header .navbar-brand {
+        font-size: 1rem;
+        max-width: calc(100% - 60px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    body:has(#header) #header .navbar-collapse {
+        background: rgba(58, 6, 15, 0.97);
+        margin-top: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(243, 210, 122, 0.3);
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+
+    body:has(#header) #header .navbar-nav {
+        align-items: stretch;
+        gap: 6px;
+        width: 100%;
+    }
+
+    body:has(#header) #header .navbar-nav .nav-link {
+        width: 100%;
+        text-align: left;
+        padding: 10px 14px !important;
+        font-size: 0.95rem;
+    }
+
+    body:has(#header) #header .navbar-nav .nav-link.logout {
+        margin-left: 0;
+        margin-top: 6px;
+        text-align: center;
+        border-radius: 10px;
+        padding: 10px 14px !important;
+    }
+
+    body:has(#header) main > .container {
+        margin-top: 18px;
+        margin-bottom: 20px;
+        padding: 18px 14px 20px;
+        border-radius: 12px;
+    }
+}
