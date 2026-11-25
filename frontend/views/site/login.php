@@ -179,7 +179,7 @@ $labelOptions = ['class' => 'form-label fw-semibold text-secondary small mb-1'];
                                 'class' => 'form-control',
                                 'type' => 'email',
                                 'placeholder' => 'correo@ejemplo.com',
-                                'autofocus' => true,
+                                
                             ],
                         ])->textInput()->label('Correo electrónico', $labelOptions) ?>
                     </div>

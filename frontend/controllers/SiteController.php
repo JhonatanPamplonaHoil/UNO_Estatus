@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace frontend\controllers;
 
 use common\models\LoginForm;
-use frontend\models\ContactForm;
 use frontend\models\PasswordResetRequestForm;
+use frontend\models\ReporteFallaForm;
 use frontend\models\ResendVerificationEmailForm;
 use frontend\models\ResetPasswordForm;
 use frontend\models\SignupForm;
 use frontend\models\VerifyEmailForm;
+use frontend\models\VerifyResetCodeForm;
 use Yii;
 use yii\base\InvalidArgumentException;
 use yii\bootstrap5\ActiveForm;
@@ -63,6 +64,7 @@ class SiteController extends Controller
                 'class' => VerbFilter::class,
                 'actions' => [
                     'logout' => ['post'],
+                    'resend-reset-code' => ['post'],
                 ],
             ],
         ];
@@ -131,15 +133,24 @@ class SiteController extends Controller
     }
 
     /**
-     * Displays contact page.
+     * Muestra y procesa el formulario de reporte de fallas del sistema.
      *
      * @return string|Response
      */
-    public function actionContact(): string|Response
+    public function actionReportarFalla(): string|Response
     {
-        $model = new ContactForm();
+        $model = new ReporteFallaForm();
+
+        // Autocompletar datos si el usuario ya inició sesión
+        if (!Yii::$app->user->isGuest) {
+            /** @var \common\models\User $user */
+            $user = Yii::$app->user->identity;
+            $model->name = trim($user->username . ' ' . ($user->apellido_paterno ?? ''));
+            $model->email = (string) $user->email;
+        }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            $guardado = $model->guardarReporte();
             $sent = $model->sendEmail(
                 $this->mailer,
                 Yii::$app->params['adminEmail'],
@@ -147,16 +158,16 @@ class SiteController extends Controller
                 Yii::$app->params['senderName'],
             );
 
-            if ($sent) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
+            if ($guardado || $sent) {
+                Yii::$app->session->setFlash('success', 'Tu reporte de falla ha sido registrado correctamente. El equipo técnico lo revisará a la brevedad.');
             } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
+                Yii::$app->session->setFlash('error', 'Ocurrió un error al enviar tu reporte. Inténtalo nuevamente.');
             }
 
             return $this->refresh();
         }
 
-        return $this->render('contact', [
+        return $this->render('reportar-falla', [
             'model' => $model,
         ]);
     }
@@ -202,7 +213,7 @@ class SiteController extends Controller
     }
 
     /**
-     * Requests password reset.
+     * Solicita el restablecimiento de contraseña enviando una clave de 6 dígitos al correo.
      *
      * @return string|Response
      */
@@ -218,12 +229,13 @@ class SiteController extends Controller
             );
 
             if ($sent) {
-                Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
-
-                return $this->goHome();
+                Yii::$app->session->set('reset_password_email', $model->email);
+                Yii::$app->session->set('reset_code_last_sent', time());
+                Yii::$app->session->setFlash('success', 'Hemos enviado una clave de 6 dígitos a tu correo electrónico (válida por 30 minutos).');
+                return $this->redirect(['site/verify-reset-code']);
             }
 
-            Yii::$app->session->setFlash('error', 'Sorry, we are unable to reset password for the provided email address.');
+            Yii::$app->session->setFlash('error', 'No se pudo enviar la clave al correo proporcionado.');
         }
 
         return $this->render('requestPasswordResetToken', [
@@ -232,7 +244,74 @@ class SiteController extends Controller
     }
 
     /**
-     * Resets password.
+     * Verifica la clave de 6 dígitos enviada al correo.
+     *
+     * @return string|Response
+     */
+    public function actionVerifyResetCode(): string|Response
+    {
+        $email = Yii::$app->session->get('reset_password_email');
+        if (!$email) {
+            return $this->redirect(['site/request-password-reset']);
+        }
+
+        $model = new VerifyResetCodeForm();
+        $model->email = (string) $email;
+
+        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+            return $this->redirect(['site/reset-password', 'token' => $model->getToken()]);
+        }
+
+        // Calcular segundos restantes para poder reenviar (bloqueo de 30s)
+        $lastSent = (int) Yii::$app->session->get('reset_code_last_sent', 0);
+        $remainingSeconds = max(0, 30 - (time() - $lastSent));
+
+        return $this->render('verifyResetCode', [
+            'model' => $model,
+            'remainingSeconds' => $remainingSeconds,
+        ]);
+    }
+
+    /**
+     * Reenvía una nueva clave de 6 dígitos respetando la espera de 30 segundos.
+     *
+     * @return Response
+     */
+    public function actionResendResetCode(): Response
+    {
+        $email = Yii::$app->session->get('reset_password_email');
+        if (!$email) {
+            return $this->redirect(['site/request-password-reset']);
+        }
+
+        $lastSent = (int) Yii::$app->session->get('reset_code_last_sent', 0);
+        $elapsed = time() - $lastSent;
+
+        if ($elapsed < 30) {
+            $faltan = 30 - $elapsed;
+            Yii::$app->session->setFlash('warning', "Debes esperar {$faltan} segundos antes de solicitar un nuevo código.");
+            return $this->redirect(['site/verify-reset-code']);
+        }
+
+        $model = new PasswordResetRequestForm();
+        $model->email = (string) $email;
+
+        if ($model->validate() && $model->sendEmail(
+            $this->mailer,
+            Yii::$app->params['supportEmail'],
+            Yii::$app->name,
+        )) {
+            Yii::$app->session->set('reset_code_last_sent', time());
+            Yii::$app->session->setFlash('success', 'Se ha enviado un nuevo código de 6 dígitos a tu correo (válido por 30 minutos).');
+        } else {
+            Yii::$app->session->setFlash('error', 'No se pudo reenviar el código. Inténtalo nuevamente.');
+        }
+
+        return $this->redirect(['site/verify-reset-code']);
+    }
+
+    /**
+     * Actualiza la contraseña con validación de confirmación.
      *
      * @param string $token
      * @return string|Response
@@ -247,9 +326,10 @@ class SiteController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->validate() && $model->resetPassword()) {
-            Yii::$app->session->setFlash('success', 'New password saved.');
-
-            return $this->goHome();
+            Yii::$app->session->remove('reset_password_email');
+            Yii::$app->session->remove('reset_code_last_sent');
+            Yii::$app->session->setFlash('success', 'Tu contraseña ha sido actualizada correctamente. Ya puedes iniciar sesión.');
+            return $this->redirect(['site/login']);
         }
 
         return $this->render('resetPassword', [

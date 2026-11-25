@@ -69,6 +69,7 @@ FontAwesomeAsset::register($this);
         $menuItems[] = ['label' => 'Trámites', 'url' => ['tramite/index']];
         $menuItems[] = ['label' => 'Crear citas', 'url' => ['disponibilidad-cita/index']];
         $menuItems[] = ['label' => 'Citas Agendadas', 'url' => ['cita-entrega/index']];
+        $menuItems[] = ['label' => 'Reportes de Fallas', 'url' => ['/reporte-falla/index']];
     }
 
     // Opciones de configuración: exclusivas para SuperUsuario
@@ -76,7 +77,6 @@ FontAwesomeAsset::register($this);
         $menuItems[] = ['label' => 'Usuarios', 'url' => ['user/index']];
         $menuItems[] = ['label' => 'Perfiles', 'url' => ['perfil/index']];
         $menuItems[] = ['label' => 'Roles', 'url' => ['rol/index']];
-        $menuItems[] = ['label' => 'Tipos de Usuario', 'url' => ['tipo-usuario/index']];
         $menuItems[] = ['label' => 'Estados', 'url' => ['estado/index']];
     }
 

@@ -13,13 +13,10 @@ $items = [
         'label' => 'Inicio',
         'url' => ['/site/index'],
     ],
+   
     [
-        'label' => 'About',
-        'url' => ['/site/about'],
-    ],
-    [
-        'label' => 'Contact',
-        'url' => ['/site/contact'],
+        'label' => 'Reportar falla',
+        'url' => ['/site/reportar-falla'],
     ],
     [
         'label' => 'Mis trámites',
@@ -46,7 +43,7 @@ $items = [
         'visible' => Yii::$app->user->isGuest,
     ],
     [
-        'label' => 'Salir (' . Html::encode(Yii::$app->user->identity?->username) . ')',
+        'label' => 'Cerrar sesión (' . Html::encode(Yii::$app->user->identity?->username) . ')',
         'url' => ['/site/logout'],
         'linkOptions' => [
             'data-method' => 'post',

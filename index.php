@@ -104,6 +104,7 @@
             letter-spacing: 0.05em;
             background: linear-gradient(135deg, var(--vino-oscuro) 0%, var(--vino-principal) 50%, var(--vino-brillante) 100%);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent !important;
             filter: drop-shadow(0 4px 16px rgba(176, 28, 71, 0.24));
             position: relative;
