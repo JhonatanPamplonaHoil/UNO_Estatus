@@ -2,7 +2,7 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
-use \yii\bootstrap5\Accordion;
+use yii\bootstrap5\Accordion;
 
 /**
  * @var yii\web\View $this
@@ -175,7 +175,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     <svg class="uno-search-icon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
-                    <input type="text" id="unoQuickSearch" class="form-control uno-quick-search" placeholder="Búsqueda rápida por usuario, correo, rol o estado...">
+                    <input type="text" id="unoQuickSearch" class="form-control uno-quick-search" placeholder="Búsqueda rápida por usuario, apellido, correo, rol o estado...">
                 </div>
             </div>
             <div class="col-md-auto text-muted small">
@@ -191,20 +191,26 @@ $this->params['breadcrumbs'][] = $this->title;
             'columns' => [
                 ['class' => 'yii\grid\SerialColumn'],
 
-                //'id',
-                ['attribute'=>'userIdLink', 'format'=>'raw'],
-                ['attribute'=>'userLink', 'format'=>'raw'],
-                ['attribute'=>'perfilLink', 'format'=>'raw'],
-               
+                ['attribute' => 'userLink', 'format' => 'raw'],
+                [
+                    'attribute' => 'apellido_paterno',
+                    'value' => function ($model) {
+                        return !empty($model->apellido_paterno) ? $model->apellido_paterno : '-';
+                    },
+                ],
+                [
+                    'attribute' => 'apellido_materno',
+                    'value' => function ($model) {
+                        return !empty($model->apellido_materno) ? $model->apellido_materno : '-';
+                    },
+                ],
+
                 'email:email',
                 'rolNombre',
-                'tipoUsuarioNombre',
                 'estadoNombre',
                 'created_at',
-              
+
                 ['class' => 'yii\grid\ActionColumn'],
-                
-                // 'updated_at',
             ],
         ]); ?>
 

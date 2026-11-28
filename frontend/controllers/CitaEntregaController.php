@@ -3,10 +3,11 @@
 namespace frontend\controllers;
 
 use Yii;
+use yii\db\Query;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\AccessControl;
-use yii\web\NotFoundHttpException;
+use yii\filters\VerbFilter;
 use common\models\DisponibilidadCita;
 use common\models\CitaEntrega;
 use common\models\TramiteTitulacion;
@@ -25,32 +26,51 @@ class CitaEntregaController extends Controller
                     ],
                 ],
             ],
+            'verbs' => [
+                'class' => VerbFilter::class,
+                'actions' => [
+                    'guardar-cita' => ['POST'],
+                    'cancelar-cita' => ['POST'],
+                ],
+            ],
         ];
     }
 
     /**
-     * Muestra la interfaz del calendario al alumno.
+     * Muestra la interfaz del calendario al alumno solo si su etapa permite cita.
      */
-   public function actionAgendar($tramite_id = null)
+    public function actionAgendar($tramite_id = null)
     {
-        // Si no se envía ID en la URL, busca el trámite activo del alumno
         if ($tramite_id === null) {
             $tramite = TramiteTitulacion::findOne(['user_id' => Yii::$app->user->id]);
         } else {
             $tramite = TramiteTitulacion::findOne(['id' => $tramite_id, 'user_id' => Yii::$app->user->id]);
         }
-        
+
         if (!$tramite) {
-            throw new NotFoundHttpException('Aun no es tiempo de que agendes cita, espera a que llegue tu título!!.');
+            Yii::$app->session->setFlash('warning', 'Aún no tienes un trámite de titulación registrado.');
+            return $this->redirect(['tramite/index']);
         }
 
-        $citaExistente = CitaEntrega::findOne(['tramite_id' => $tramite->id, 'estado' => 'Agendada']);
+        if (!$this->puedeAgendarCita($tramite)) {
+            Yii::$app->session->setFlash(
+                'warning',
+                'Aún no puedes agendar cita. Debes esperar a que tu estatus cambie a "Título Disponible en Ventanilla".'
+            );
+            return $this->redirect(['tramite/index']);
+        }
+
+        $citaExistente = CitaEntrega::findOne([
+            'tramite_id' => $tramite->id,
+            'estado' => 'Agendada',
+        ]);
 
         return $this->render('agendar', [
             'tramite' => $tramite,
             'citaExistente' => $citaExistente,
         ]);
     }
+
     /**
      * Retorna la disponibilidad en formato JSON para FullCalendar.
      */
@@ -79,7 +99,7 @@ class CitaEntregaController extends Controller
                     'disponible' => $esDisponible,
                     'fecha_formateada' => Yii::$app->formatter->asDate($disp->fecha, 'php:d/m/Y'),
                     'horario' => $disp->hora_inicio . ' a ' . $disp->hora_fin,
-                ]
+                ],
             ];
         }
 
@@ -103,6 +123,21 @@ class CitaEntregaController extends Controller
             return ['success' => false, 'message' => 'Datos inválidos.'];
         }
 
+        if (!$this->puedeAgendarCita($tramite)) {
+            return [
+                'success' => false,
+                'message' => 'Aún no puedes agendar cita. Tu título debe estar en estatus "Título Disponible en Ventanilla".',
+            ];
+        }
+
+        $yaTieneCita = CitaEntrega::find()
+            ->where(['tramite_id' => $tramite->id, 'estado' => 'Agendada'])
+            ->exists();
+
+        if ($yaTieneCita) {
+            return ['success' => false, 'message' => 'Ya cuentas con una cita agendada.'];
+        }
+
         if ($disponibilidad->getLugaresDisponibles() <= 0) {
             return ['success' => false, 'message' => 'Lo sentimos, este día ya se ha llenado.'];
         }
@@ -120,5 +155,51 @@ class CitaEntregaController extends Controller
         }
 
         return ['success' => false, 'message' => 'Ocurrió un error al guardar la cita.'];
+    }
+
+    /**
+     * Cancela (elimina) la cita agendada del alumno para que pueda elegir otra fecha.
+     */
+    public function actionCancelarCita($id)
+    {
+        $tramite = TramiteTitulacion::findOne(['user_id' => Yii::$app->user->id]);
+
+        if (!$tramite) {
+            Yii::$app->session->setFlash('error', 'No se encontró tu trámite.');
+            return $this->redirect(['tramite/index']);
+        }
+
+        $cita = CitaEntrega::findOne([
+            'id' => $id,
+            'tramite_id' => $tramite->id,
+            'estado' => 'Agendada',
+        ]);
+
+        if (!$cita) {
+            Yii::$app->session->setFlash('warning', 'No se encontró una cita activa para cancelar.');
+            return $this->redirect(['agendar']);
+        }
+
+        if ($cita->delete()) {
+            Yii::$app->session->setFlash('success', 'Tu cita ha sido cancelada. Ahora puedes seleccionar una nueva fecha disponible.');
+        } else {
+            Yii::$app->session->setFlash('error', 'No se pudo cancelar la cita. Inténtalo de nuevo.');
+        }
+
+        return $this->redirect(['agendar']);
+    }
+
+    /**
+     * Verifica en la base de datos si la etapa actual del trámite tiene permite_cita = 1.
+     */
+    private function puedeAgendarCita(TramiteTitulacion $tramite): bool
+    {
+        $permiteCita = (new Query())
+            ->select('permite_cita')
+            ->from('etapa_tramite')
+            ->where(['id' => $tramite->etapa_actual_id])
+            ->scalar();
+
+        return (int) $permiteCita === 1;
     }
 }

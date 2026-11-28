@@ -1,10 +1,12 @@
 <?php
+
 namespace common\models;
+
 use Yii;
 use backend\models\Rol;
 use backend\models\Estado;
-use backend\models\TipoUsuario;
 use common\models\User;
+
 class ValorHelpers
 {
     public static function rolCoincide($rol_nombre)
@@ -12,9 +14,10 @@ class ValorHelpers
         $userTieneRolNombre = Yii::$app->user->identity->rol->rol_nombre;
         return $userTieneRolNombre == $rol_nombre ? true : false;
     }
-    public static function getUsersRolValor($userId=null)
+
+    public static function getUsersRolValor($userId = null)
     {
-        if ($userId == null){
+        if ($userId == null) {
             $usersRolValor = Yii::$app->user->identity->rol->rol_valor;
             return isset($usersRolValor) ? $usersRolValor : false;
         } else {
@@ -23,6 +26,7 @@ class ValorHelpers
             return isset($usersRolValor) ? $usersRolValor : false;
         }
     }
+
     public static function getRolValor($rol_nombre)
     {
         $rol = Rol::find()
@@ -30,6 +34,7 @@ class ValorHelpers
             ->one();
         return isset($rol->rol_valor) ? $rol->rol_valor : false;
     }
+
     public static function esRolNombreValido($rol_nombre)
     {
         $rol = Rol::find()
@@ -37,21 +42,18 @@ class ValorHelpers
             ->one();
         return isset($rol->rol_nombre) ? true : false;
     }
+
     public static function estadoCoincide($estado_nombre)
     {
         $userTieneEstadoName = Yii::$app->user->identity->estado->estado_nombre;
         return $userTieneEstadoName == $estado_nombre ? true : false;
     }
+
     public static function getEstadoId($estado_nombre)
     {
         $estado = Estado::find()
             ->where(['estado_nombre' => $estado_nombre])
             ->one();
         return isset($estado->id) ? $estado->id : false;
-    }
-    public static function tipoUsuarioCoincide($tipo_usuario_nombre)
-    {
-        $userTieneTipoUsurioName = Yii::$app->user->identity->tipoUsuario->tipo_usuario_nombre;
-        return $userTieneTipoUsurioName == $tipo_usuario_nombre ? true : false;
     }
 }

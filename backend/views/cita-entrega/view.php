@@ -127,17 +127,6 @@ $this->registerCss("
         </div>
     </div>
 
-    <p class="uno-view-actions">
-        <?= Html::a('Actualizar', ['update', 'id' => $model->id], ['class' => 'btn btn-primary btn-uno-dorado']) ?>
-        <?= Html::a('Eliminar', ['delete', 'id' => $model->id], [
-            'class' => 'btn btn-danger btn-uno-eliminar',
-            'data' => [
-                'confirm' => 'Are you sure you want to delete this item?',
-                'method' => 'post',
-            ],
-        ]) ?>
-    </p>
-
     <div class="uno-detail-card">
         <?= DetailView::widget([
             'model' => $model,

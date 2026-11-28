@@ -5,7 +5,7 @@ use yii\helpers\Html;
 /** @var yii\web\View $this */
 /** @var common\models\TramiteTitulacion $model */
 
-$this->title = 'Create Tramite Titulacion';
+$this->title = 'Creación de tramite para visualización de estatus';
 $this->params['breadcrumbs'][] = ['label' => 'Tramite Titulacions', 'url' => ['index']];
 $this->params['breadcrumbs'][] = $this->title;
 ?>

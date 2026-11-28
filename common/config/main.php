@@ -44,6 +44,8 @@ return [
         ],
         // sus otros módulos
     ],
+
+    'timeZone' => 'America/Merida',
  
     'components' => [
         'cache' => [

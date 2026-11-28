@@ -13,7 +13,6 @@ use frontend\models\Perfil;
 use backend\models\Rol;
 use yii\helpers\ArrayHelper;
 use backend\models\Estado;
-use backend\models\TipoUsuario;
 use yii\helpers\Url;
 use yii\helpers\Html;
 use common\models\ValorHelpers;
@@ -32,7 +31,6 @@ use common\models\ValorHelpers;
  * @property string $auth_key
  * @property integer $rol_id
  * @property integer $estado_id
- * @property integer $tipo_usuario_id
  * @property integer $created_at
  * @property integer $updated_at
  * @property string $password write-only password
@@ -73,8 +71,6 @@ class User extends ActiveRecord implements IdentityInterface
             [['rol_id'], 'in', 'range' => array_keys($this->getRolLista())],
             ['estado_id', 'default', 'value' => ValorHelpers::getEstadoId('Activo')],
             [['estado_id'], 'in', 'range' => array_keys($this->getEstadoLista())],
-            ['tipo_usuario_id', 'default', 'value' => 1],
-            [['tipo_usuario_id'], 'in', 'range' => array_keys($this->getTipoUsuarioLista())],
 
             ['username', 'filter', 'filter' => $trimFilter, 'skipOnEmpty' => true],
             ['username', 'required'],
@@ -109,8 +105,6 @@ class User extends ActiveRecord implements IdentityInterface
             'apellido_materno' => Yii::t('app', 'Apellido materno'),
             'email' => Yii::t('app', 'Correo electrónico'),
             'telefono' => Yii::t('app', 'Teléfono'),
-            'tipoUsuarioNombre' => Yii::t('app', 'Tipo Usuario'),
-            'tipoUsuarioId' => Yii::t('app', 'Tipo Usuario'),
             'userIdLink' => Yii::t('app', 'ID'),
         ];
     }
@@ -322,36 +316,6 @@ class User extends ActiveRecord implements IdentityInterface
     {
         $dropciones = Estado::find()->asArray()->all();
         return ArrayHelper::map($dropciones, 'id', 'estado_nombre');
-    }
-
-    public function getTipoUsuario()
-    {
-        return $this->hasOne(TipoUsuario::className(), ['id' => 'tipo_usuario_id']);
-    }
-
-    /**
-     * get tipo usuario nombre
-     */
-    public function getTipoUsuarioNombre()
-    {
-        return $this->tipoUsuario ? $this->tipoUsuario->tipo_usuario_nombre : '- sin tipo usuario -';
-    }
-
-    /**
-     * get lista de tipos de usuario para lista desplegable
-     */
-    public static function getTipoUsuarioLista()
-    {
-        $dropciones = TipoUsuario::find()->asArray()->all();
-        return ArrayHelper::map($dropciones, 'id', 'tipo_usuario_nombre');
-    }
-
-    /**
-     * get tipo usuario id
-     */
-    public function getTipoUsuarioId()
-    {
-        return $this->tipoUsuario ? $this->tipoUsuario->id : 'ninguno';
     }
 
     /**

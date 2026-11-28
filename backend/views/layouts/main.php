@@ -7,14 +7,11 @@ use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 use yii\helpers\Html;
 
-/**
-- @var \yii\web\View $this
-- @var string $content
- */
+/** @var \yii\web\View $this */
+/** @var string $content */
 
 AppAsset::register($this);
 FontAwesomeAsset::register($this);
-
 ?>
 <?php $this->beginPage() ?>
 <!DOCTYPE html>
@@ -65,10 +62,11 @@ FontAwesomeAsset::register($this);
 
     // Opciones operativas: visibles para Admin y SuperUsuario
     if (!Yii::$app->user->isGuest && $es_admin) {
-        $menuItems[] = ['label' => 'Trámites', 'url' => ['tramite/index']];
+        $menuItems[] = ['label' => 'Estatus de alumnos', 'url' => ['tramite/index']];
         $menuItems[] = ['label' => 'Crear citas', 'url' => ['disponibilidad-cita/index']];
         $menuItems[] = ['label' => 'Citas Agendadas', 'url' => ['cita-entrega/index']];
         $menuItems[] = ['label' => 'Reportes de Fallas', 'url' => ['/reporte-falla/index']];
+        $menuItems[] = ['label' => 'Reportes', 'url' => ['/reporte/index']];
     }
 
     // Opciones de configuración: exclusivas para SuperUsuario
@@ -88,12 +86,12 @@ FontAwesomeAsset::register($this);
             'linkOptions' => [
                 'data-method' => 'post',
                 'class' => 'logout',
-            ]
+            ],
         ];
     }
 
     echo Nav::widget([
-        'options' => ['class' => 'navbar-nav ms-auto'], // ms-auto empuja el menú a la derecha en Bootstrap 5
+        'options' => ['class' => 'navbar-nav ms-auto'],
         'items' => $menuItems,
     ]);
 
@@ -107,7 +105,7 @@ FontAwesomeAsset::register($this);
     </div>
 
     <?php if (Yii::$app->controller->action->id !== 'index'): ?>
-        <button type="button" class="btn btn-regresar-global" title="Regresar" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '<?= Yii::$app->homeUrl ?>'; }">
+        <button type="button" class="btn btn-regresar-global d-print-none" title="Regresar" onclick="if (window.history.length > 1) { window.history.back(); } else { window.location.href = '<?= Yii::$app->homeUrl ?>'; }">
             <i class="fa fa-arrow-left" aria-hidden="true"></i> <span>Regresar</span>
         </button>
     <?php endif; ?>

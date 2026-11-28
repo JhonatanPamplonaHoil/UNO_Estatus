@@ -2,6 +2,7 @@
 
 namespace backend\controllers;
 
+use Yii;
 use common\models\CitaEntrega;
 use common\models\PermisosHelpers;
 use backend\models\search\CitaEntregaSearch;
@@ -45,11 +46,6 @@ class CitaEntregaController extends Controller
         );
     }
 
-    /**
-     * Lists all CitaEntrega models.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
         $searchModel = new CitaEntregaSearch();
@@ -61,12 +57,6 @@ class CitaEntregaController extends Controller
         ]);
     }
 
-    /**
-     * Displays a single CitaEntrega model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -74,11 +64,6 @@ class CitaEntregaController extends Controller
         ]);
     }
 
-    /**
-     * Creates a new CitaEntrega model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
     public function actionCreate()
     {
         $model = new CitaEntrega();
@@ -96,13 +81,6 @@ class CitaEntregaController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing CitaEntrega model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -117,26 +95,46 @@ class CitaEntregaController extends Controller
     }
 
     /**
-     * Deletes an existing CitaEntrega model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
+     * Cancela (elimina) la cita y envía correo de aviso al alumno.
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $emailAlumno = $model->tramite && $model->tramite->user ? $model->tramite->user->email : null;
+        $nombreAlumno = $model->tramite && $model->tramite->user ? $model->tramite->user->username : 'Egresado';
+        $fechaFormateada = Yii::$app->formatter->asDate($model->fecha, 'php:d/m/Y');
+
+        if ($model->delete()) {
+            $correoEnviado = false;
+
+            if (!empty($emailAlumno)) {
+                try {
+                    $remitente = Yii::$app->params['senderEmail'] ?? Yii::$app->params['supportEmail'] ?? 'no-reply@uno.edu.mx';
+                    $correoEnviado = Yii::$app->mailer->compose()
+                        ->setFrom([$remitente => 'UNO Estatus - Servicios Escolares'])
+                        ->setTo($emailAlumno)
+                        ->setSubject('Aviso de cancelación de cita - UNO')
+                        ->setTextBody(
+                            "Hola {$nombreAlumno},\n\n" .
+                            "La cita para el día {$fechaFormateada} ha sido cancelada, por favor seleccione otro día en el portal UNO Estatus.\n\n" .
+                            "Atentamente,\nServicios Escolares - Universidad de Oriente"
+                        )
+                        ->send();
+                } catch (\Throwable $e) {
+                    Yii::error('Error al enviar correo de cancelación individual: ' . $e->getMessage(), __METHOD__);
+                }
+            }
+
+            if ($correoEnviado) {
+                Yii::$app->session->setFlash('success', 'La cita fue cancelada y se envió el correo de notificación al alumno.');
+            } else {
+                Yii::$app->session->setFlash('warning', 'La cita fue cancelada, pero no se pudo enviar el correo de notificación.');
+            }
+        }
 
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the CitaEntrega model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return CitaEntrega the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
         if (($model = CitaEntrega::findOne(['id' => $id])) !== null) {

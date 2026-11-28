@@ -146,6 +146,19 @@ $this->registerCss("
                     </p>
                     <p class="mb-0">Por favor, preséntate en la ventanilla de Servicios Escolares con tu identificación oficial.</p>
                 </div>
+                  <div class="mt-3 pt-3 border-top">
+                     <?= \yii\helpers\Html::a(
+                         'Cancelar cita',
+                         ['cita-entrega/cancelar-cita', 'id' => $citaExistente->id],
+                         [
+                          'class' => 'btn btn-outline-danger btn-sm',
+                         'data' => [
+                         'confirm' => '¿Estás seguro de que deseas cancelar tu cita programada? Podrás agendar otra fecha disponible.',
+                         'method' => 'post',
+                         ],
+                         ]
+                     ) ?>
+                </div>
             <?php else: ?>
                 <!-- Instrucciones y Calendario -->
                 <div class="alert alert-info uno-cita-info">

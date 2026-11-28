@@ -121,17 +121,16 @@ $this->registerCss("
 <div class="profile-view">
 
     <div class="uno-view-header">
-        <h1>Profile:  <?= Html::encode($this->title) ?></h1>
+        <h1>Profile: <?= Html::encode($this->title) ?></h1>
         <p class="uno-view-subtitle">Información detallada del perfil de usuario</p>
     </div>
 
-
     <p class="uno-view-actions">
-
         <?php if (!Yii::$app->user->isGuest && $mostrar_esta_nav) {
-            echo Html::a('Actualizar', ['update', 'id' => $model->id],
-                ['class' => 'btn btn-primary btn-uno-dorado']);}?>
-
+            echo Html::a('Actualizar', ['update', 'id' => $model->id], [
+                'class' => 'btn btn-primary btn-uno-dorado',
+            ]);
+        } ?>
 
         <?php if (!Yii::$app->user->isGuest && $mostrar_esta_nav) {
             echo Html::a('Eliminar', ['delete', 'id' => $model->id], [
@@ -140,25 +139,36 @@ $this->registerCss("
                     'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
                     'method' => 'post',
                 ],
-            ]);}?>
-
+            ]);
+        } ?>
     </p>
 
-
     <div class="uno-detail-card">
-    <?= DetailView::widget([
-        'model' => $model,
-        'attributes' => [
-            ['attribute'=>'userLink', 'format'=>'raw'],
-            'nombre',
-            'apellido',
-            'fecha_nacimiento',
-            'genero.genero_nombre',
-            'created_at',
-            'updated_at',
-            'id',
-        ],
-    ])?>
+        <?= DetailView::widget([
+            'model' => $model,
+            'attributes' => [
+                ['attribute' => 'userLink', 'format' => 'raw'],
+                'nombre',
+                [
+                    'attribute' => 'apellido',
+                    'value' => function ($model) {
+                        if (!empty($model->apellido)) {
+                            return $model->apellido;
+                        }
+                        if ($model->user) {
+                            $apellidos = trim(($model->user->apellido_paterno ?? '') . ' ' . ($model->user->apellido_materno ?? ''));
+                            return $apellidos !== '' ? $apellidos : null;
+                        }
+                        return null;
+                    },
+                ],
+                'fecha_nacimiento',
+                'genero.genero_nombre',
+                'created_at',
+                'updated_at',
+                'id',
+            ],
+        ]) ?>
     </div>
 
 </div>

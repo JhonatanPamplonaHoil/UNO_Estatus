@@ -103,10 +103,9 @@ class SignupForm extends Model
         $user->setPassword($this->password);
         $user->generateAuthKey();
 
-        // Asignación de rol, estado institucional y tipo de usuario
+        // Asignación de rol y estado institucional
         $user->rol_id = 1; // Usuario / Egresado
         $user->estado_id = ValorHelpers::getEstadoId('Activo');
-        $user->tipo_usuario_id = 1;
 
         if ($user->save()) {
             // Creación automática del perfil asociado al usuario

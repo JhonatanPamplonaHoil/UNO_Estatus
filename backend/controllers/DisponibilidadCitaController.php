@@ -3,6 +3,7 @@
 namespace backend\controllers;
 
 use Yii;
+use common\models\CitaEntrega;
 use common\models\DisponibilidadCita;
 use common\models\PermisosHelpers;
 use backend\models\search\DisponibilidadCitaSearch;
@@ -49,11 +50,6 @@ class DisponibilidadCitaController extends Controller
         );
     }
 
-    /**
-     * Lists all DisponibilidadCita models.
-     *
-     * @return string
-     */
     public function actionIndex()
     {
         $searchModel = new DisponibilidadCitaSearch();
@@ -65,12 +61,6 @@ class DisponibilidadCitaController extends Controller
         ]);
     }
 
-    /**
-     * Displays a single DisponibilidadCita model.
-     * @param int $id ID
-     * @return string
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionView($id)
     {
         return $this->render('view', [
@@ -78,11 +68,6 @@ class DisponibilidadCitaController extends Controller
         ]);
     }
 
-    /**
-     * Creates a new DisponibilidadCita model.
-     * If creation is successful, the browser will be redirected to the 'view' page.
-     * @return string|\yii\web\Response
-     */
     public function actionCreate()
     {
         $model = new DisponibilidadCita();
@@ -100,13 +85,6 @@ class DisponibilidadCitaController extends Controller
         ]);
     }
 
-    /**
-     * Updates an existing DisponibilidadCita model.
-     * If update is successful, the browser will be redirected to the 'view' page.
-     * @param int $id ID
-     * @return string|\yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionUpdate($id)
     {
         $model = $this->findModel($id);
@@ -120,27 +98,22 @@ class DisponibilidadCitaController extends Controller
         ]);
     }
 
-    /**
-     * Deletes an existing DisponibilidadCita model.
-     * If deletion is successful, the browser will be redirected to the 'index' page.
-     * @param int $id ID
-     * @return \yii\web\Response
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        $model = $this->findModel($id);
+        $fecha = $model->fecha;
+
+        if ($model->delete()) {
+            $notificados = $this->cancelarCitasYNotificar($fecha);
+            Yii::$app->session->setFlash(
+                'success',
+                "Disponibilidad eliminada. Se cancelaron y notificaron {$notificados} cita(s) agendada(s) para ese día."
+            );
+        }
 
         return $this->redirect(['index']);
     }
 
-    /**
-     * Finds the DisponibilidadCita model based on its primary key value.
-     * If the model is not found, a 404 HTTP exception will be thrown.
-     * @param int $id ID
-     * @return DisponibilidadCita the loaded model
-     * @throws NotFoundHttpException if the model cannot be found
-     */
     protected function findModel($id)
     {
         if (($model = DisponibilidadCita::findOne(['id' => $id])) !== null) {
@@ -151,43 +124,37 @@ class DisponibilidadCitaController extends Controller
     }
 
     // =========================================================================
-    // NUEVAS FUNCIONES PARA EL CALENDARIO (AJAX)
+    // FUNCIONES PARA EL CALENDARIO (AJAX)
     // =========================================================================
 
-    /**
-     * Retorna los eventos en JSON para FullCalendar
-     */
     public function actionEventos()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $eventos = [];
         $disponibilidades = DisponibilidadCita::find()->all();
-        
+
         foreach ($disponibilidades as $disp) {
             $eventos[] = [
                 'id' => $disp->id,
                 'title' => "Cupo: " . $disp->cupo_maximo,
                 'start' => $disp->fecha . 'T' . $disp->hora_inicio,
                 'end' => $disp->fecha . 'T' . $disp->hora_fin,
-                'color' => '#198754', // Verde Bootstrap
+                'color' => '#198754',
                 'extendedProps' => [
                     'hora_inicio' => $disp->hora_inicio,
                     'hora_fin' => $disp->hora_fin,
                     'cupo_maximo' => $disp->cupo_maximo,
-                ]
+                ],
             ];
         }
         return $eventos;
     }
 
-    /**
-     * Crea una nueva disponibilidad vía AJAX
-     */
     public function actionCrearAjax()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $model = new DisponibilidadCita();
-        
+
         if (Yii::$app->request->isPost) {
             $model->fecha = Yii::$app->request->post('fecha');
             $model->hora_inicio = Yii::$app->request->post('hora_inicio');
@@ -195,7 +162,7 @@ class DisponibilidadCitaController extends Controller
             $model->cupo_maximo = Yii::$app->request->post('cupo_maximo');
             $model->created_at = date('Y-m-d H:i:s');
             $model->updated_at = date('Y-m-d H:i:s');
-            
+
             if ($model->save()) {
                 return ['success' => true];
             }
@@ -203,21 +170,18 @@ class DisponibilidadCitaController extends Controller
         return ['success' => false, 'message' => 'Error al guardar.'];
     }
 
-    /**
-     * Actualiza una disponibilidad existente vía AJAX
-     */
     public function actionActualizarAjax()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $id = Yii::$app->request->post('id');
         $model = DisponibilidadCita::findOne($id);
-        
+
         if ($model && Yii::$app->request->isPost) {
             $model->hora_inicio = Yii::$app->request->post('hora_inicio');
             $model->hora_fin = Yii::$app->request->post('hora_fin');
             $model->cupo_maximo = Yii::$app->request->post('cupo_maximo');
             $model->updated_at = date('Y-m-d H:i:s');
-            
+
             if ($model->save()) {
                 return ['success' => true];
             }
@@ -226,17 +190,70 @@ class DisponibilidadCitaController extends Controller
     }
 
     /**
-     * Elimina una disponibilidad vía AJAX
+     * Elimina una disponibilidad vía AJAX, cancela las citas de ese día y notifica por correo a los alumnos.
      */
     public function actionEliminarAjax()
     {
         Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $id = Yii::$app->request->post('id');
         $model = DisponibilidadCita::findOne($id);
-        
-        if ($model && $model->delete()) {
-            return ['success' => true];
+
+        if ($model) {
+            $fecha = $model->fecha;
+
+            if ($model->delete()) {
+                $notificados = $this->cancelarCitasYNotificar($fecha);
+                return [
+                    'success' => true,
+                    'notificados' => $notificados,
+                    'message' => "Las citas de ese día fueron canceladas. Alumnos notificados: {$notificados}.",
+                ];
+            }
         }
-        return ['success' => false];
+
+        return ['success' => false, 'message' => 'No se pudo cancelar la disponibilidad.'];
+    }
+
+    /**
+     * Busca todas las citas agendadas en una fecha, las elimina y envía correo a cada alumno.
+     */
+    private function cancelarCitasYNotificar(string $fecha): int
+    {
+        $citas = CitaEntrega::find()
+            ->with('tramite.user')
+            ->where(['fecha' => $fecha])
+            ->all();
+
+        $fechaFormateada = Yii::$app->formatter->asDate($fecha, 'php:d/m/Y');
+        $remitente = Yii::$app->params['senderEmail'] ?? Yii::$app->params['supportEmail'] ?? 'no-reply@uno.edu.mx';
+        $enviados = 0;
+
+        foreach ($citas as $cita) {
+            $emailAlumno = $cita->tramite && $cita->tramite->user ? $cita->tramite->user->email : null;
+            $nombreAlumno = $cita->tramite && $cita->tramite->user ? $cita->tramite->user->username : 'Egresado';
+
+            if ($cita->delete() && !empty($emailAlumno)) {
+                try {
+                    $ok = Yii::$app->mailer->compose()
+                        ->setFrom([$remitente => 'UNO Estatus - Servicios Escolares'])
+                        ->setTo($emailAlumno)
+                        ->setSubject('Aviso de cancelación de citas - UNO')
+                        ->setTextBody(
+                            "Hola {$nombreAlumno},\n\n" .
+                            "Las citas del día {$fechaFormateada} han sido canceladas, por favor seleccione otro día en el portal UNO Estatus.\n\n" .
+                            "Atentamente,\nServicios Escolares - Universidad de Oriente"
+                        )
+                        ->send();
+
+                    if ($ok) {
+                        $enviados++;
+                    }
+                } catch (\Throwable $e) {
+                    Yii::error("Error al enviar correo masivo a {$emailAlumno}: " . $e->getMessage(), __METHOD__);
+                }
+            }
+        }
+
+        return $enviados;
     }
 }

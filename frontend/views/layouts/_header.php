@@ -19,7 +19,7 @@ $items = [
         'url' => ['/site/reportar-falla'],
     ],
     [
-        'label' => 'Mis trámites',
+        'label' => 'Estatus',
         'url' => ['/tramite/index'],
         'visible' => !Yii::$app->user->isGuest,
     ],

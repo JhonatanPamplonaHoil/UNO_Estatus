@@ -10,7 +10,7 @@ use yii\grid\GridView;
 /** @var frontend\models\search\TramiteTitulacionSearch $searchModel */
 /** @var yii\data\ActiveDataProvider $dataProvider */
 
-$this->title = 'Mis Trámites de Titulación';
+$this->title = 'Estatus de mi título';
 $this->params['breadcrumbs'][] = $this->title;
 
 // Verificar si el alumno ya cuenta con un trámite registrado

@@ -116,6 +116,22 @@ $this->registerJs("
         color: #b01a40;
         text-decoration: underline;
     }
+    .uno-grid table tbody td a.btn-outline-secondary {
+        color: #7a122c;
+        border-color: #7a122c;
+    }
+    .uno-grid table tbody td a.btn-outline-secondary:hover {
+        background-color: #7a122c;
+        color: #ffffff;
+        text-decoration: none;
+    }
+    .uno-grid table tbody td a.btn-outline-danger {
+        color: #dc3545;
+    }
+    .uno-grid table tbody td a.btn-outline-danger:hover {
+        color: #ffffff;
+        text-decoration: none;
+    }
 
     /* Paginación institucional */
     .uno-grid .pagination .page-item.active .page-link {
@@ -196,9 +212,38 @@ $this->registerJs("
                 [
                     'class' => ActionColumn::className(),
                     'template' => '{view} {delete}',
+                    'contentOptions' => ['class' => 'text-nowrap'],
+                    'buttons' => [
+                        'view' => function ($url, CitaEntrega $model, $key) {
+                            return Html::a(
+                                '<svg aria-hidden="true" style="display:inline-block;font-size:inherit;height:1em;overflow:visible;vertical-align:-.125em;width:1.125em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="currentColor" d="M572.52 241.4C518.29 135.59 410.93 64 288 64S57.68 135.64 3.48 241.41a32.35 32.35 0 000 29.19C57.71 376.41 165.07 448 288 448s230.32-71.64 284.52-177.41a32.35 32.35 0 000-29.19zM288 400a144 144 0 11144-144 143.93 143.93 0 01-144 144zm0-240a95.31 95.31 0 00-25.31 3.79 47.85 47.85 0 01-66.9 66.9A95.78 95.78 0 10288 160z"/></svg> Ver cita',
+                                $url,
+                                [
+                                    'class' => 'btn btn-sm btn-outline-secondary',
+                                    'title' => 'Ver cita',
+                                    'aria-label' => 'Ver cita',
+                                    'data-pjax' => '0',
+                                ]
+                            );
+                        },
+                        'delete' => function ($url, CitaEntrega $model, $key) {
+                            return Html::a(
+                                '<svg aria-hidden="true" style="display:inline-block;font-size:inherit;height:1em;overflow:visible;vertical-align:-.125em;width:.875em" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M32 464a48 48 0 0048 48h288a48 48 0 0048-48V128H32zm272-256a16 16 0 0132 0v224a16 16 0 01-32 0zm-96 0a16 16 0 0132 0v224a16 16 0 01-32 0zm-96 0a16 16 0 0132 0v224a16 16 0 01-32 0zM432 32H312l-9-19a24 24 0 00-22-13H167a24 24 0 00-22 13l-9 19H16A16 16 0 000 48v32a16 16 0 0016 16h416a16 16 0 0016-16V48a16 16 0 00-16-16z"/></svg> Cancelar',
+                                $url,
+                                [
+                                    'class' => 'btn btn-sm btn-outline-danger ms-2',
+                                    'title' => 'Cancelar cita',
+                                    'aria-label' => 'Cancelar cita',
+                                    'data-confirm' => '¿Deseas cancelar esta cita? Se le enviará un correo de notificación al alumno.',
+                                    'data-method' => 'post',
+                                    'data-pjax' => '0',
+                                ]
+                            );
+                        },
+                    ],
                     'urlCreator' => function ($action, CitaEntrega $model, $key, $index, $column) {
                         return Url::toRoute([$action, 'id' => $model->id]);
-                    }
+                    },
                 ],
             ],
         ]); ?>

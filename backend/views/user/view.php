@@ -125,41 +125,41 @@ $this->registerCss("
     </div>
 
     <p class="uno-view-actions">
+        <?php if (!Yii::$app->user->isGuest && $show_this_nav) {
+            echo Html::a('Actualizar', ['update', 'id' => $model->id], [
+                'class' => 'btn btn-primary btn-uno-dorado',
+            ]);
+        } ?>
 
-<?php if (!Yii::$app->user->isGuest && $show_this_nav) {
-      echo Html::a('Actualizar', ['update', 'id' => $model->id],
-                             ['class' => 'btn btn-primary btn-uno-dorado']);}?>
+        <?php if (!Yii::$app->user->isGuest && $show_this_nav) {
+            echo Html::a('Eliminar', ['delete', 'id' => $model->id], [
+                'class' => 'btn btn-danger btn-uno-eliminar',
+                'data' => [
+                    'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
+                    'method' => 'post',
+                ],
+            ]);
+        } ?>
+    </p>
 
-<?php if (!Yii::$app->user->isGuest && $show_this_nav) {
-      echo Html::a('Eliminar', ['delete', 'id' => $model->id], [
-         'class' => 'btn btn-danger btn-uno-eliminar',
-         'data' => [
-'confirm' => Yii::t('app', 'Are you sure you want to delete this item?'),
-         'method' => 'post',
-         ],
-        ]);}?>
+    <div class="uno-detail-card">
+        <?= DetailView::widget([
+            'model' => $model,
+            'attributes' => [
+                ['attribute' => 'profileLink', 'format' => 'raw'],
 
-   </p>
-
-   <div class="uno-detail-card">
-   <?= DetailView::widget([
-        'model' => $model,
-        'attributes' => [
-            ['attribute'=>'profileLink', 'format'=>'raw'],
-            
-            //'username',
-            //'auth_key',
-            //'password_hash',
-            //'password_reset_token',
-            'email:email',
-            'rolNombre',
-            'estadoNombre',
-            'tipoUsuarioNombre',
-            'created_at',
-            'updated_at',
-            'id',
-        ],
-    ]) ?>
-   </div>
+                //'username',
+                //'auth_key',
+                //'password_hash',
+                //'password_reset_token',
+                'email:email',
+                'rolNombre',
+                'estadoNombre',
+                'created_at',
+                'updated_at',
+                'id',
+            ],
+        ]) ?>
+    </div>
 
 </div>

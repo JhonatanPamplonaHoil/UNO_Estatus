@@ -9,21 +9,12 @@ use common\models\User;
 
 /**
  * UserSearch represents the model behind the
- * search form about `common\models\user`.
+ * search form about `common\models\User`.
  */
 class UserSearch extends User
 {
     /** @var string */
     public $rolNombre;
-
-    /** @var string */
-    public $tipoUsuarioNombre;
-
-    /** @var string */
-    public $tipo_usuario_nombre;
-
-    /** @var int|string */
-    public $tipo_usuario_id;
 
     /** @var string */
     public $estadoNombre;
@@ -37,10 +28,9 @@ class UserSearch extends User
     public function rules()
     {
         return [
-            [['id', 'rol_id', 'estado_id', 'tipo_usuario_id'], 'integer'],
-            [['username', 'email', 'created_at', 'updated_at', 'rolNombre',
-                'estadoNombre', 'tipoUsuarioNombre', 'perfilId',
-                'tipo_usuario_nombre'], 'safe'],
+            [['id', 'rol_id', 'estado_id'], 'integer'],
+            [['username', 'apellido_paterno', 'apellido_materno', 'email', 'created_at', 'updated_at', 'rolNombre',
+                'estadoNombre', 'perfilId'], 'safe'],
         ];
     }
 
@@ -74,96 +64,101 @@ class UserSearch extends User
                 'userIdLink' => [
                     'asc' => ['user.id' => SORT_ASC],
                     'desc' => ['user.id' => SORT_DESC],
-                    'label' => 'User'
+                    'label' => 'User',
                 ],
                 'userLink' => [
                     'asc' => ['user.username' => SORT_ASC],
                     'desc' => ['user.username' => SORT_DESC],
-                    'label' => 'User'
+                    'label' => 'User',
+                ],
+                'apellido_paterno' => [
+                    'asc' => ['user.apellido_paterno' => SORT_ASC],
+                    'desc' => ['user.apellido_paterno' => SORT_DESC],
+                    'label' => 'Apellido paterno',
+                ],
+                'apellido_materno' => [
+                    'asc' => ['user.apellido_materno' => SORT_ASC],
+                    'desc' => ['user.apellido_materno' => SORT_DESC],
+                    'label' => 'Apellido materno',
                 ],
                 'perfilLink' => [
                     'asc' => ['perfil.id' => SORT_ASC],
                     'desc' => ['perfil.id' => SORT_DESC],
-                    'label' => 'Perfil'
+                    'label' => 'Perfil',
                 ],
                 'rolNombre' => [
-                    'asc' => ['rol.rol_name' => SORT_ASC],
-                    'desc' => ['rol.rol_name' => SORT_DESC],
-                    'label' => 'Rol'
+                    'asc' => ['rol.rol_nombre' => SORT_ASC],
+                    'desc' => ['rol.rol_nombre' => SORT_DESC],
+                    'label' => 'Rol',
                 ],
                 'estadoNombre' => [
                     'asc' => ['estado.estado_nombre' => SORT_ASC],
                     'desc' => ['estado.estado_nombre' => SORT_DESC],
-                    'label' => 'Estado'
-                ],
-                'tipoUsuarioNombre' => [
-                    'asc' => ['tipo_usuario.tipo_usuario_nombre' => SORT_ASC],
-                    'desc' => ['tipo_usuario.tipo_usuario_nombre' => SORT_DESC],
-                    'label' => 'Tipo Usuario'
+                    'label' => 'Estado',
                 ],
                 'created_at' => [
                     'asc' => ['created_at' => SORT_ASC],
                     'desc' => ['created_at' => SORT_DESC],
-                    'label' => 'Created At'
+                    'label' => 'Created At',
                 ],
                 'email' => [
                     'asc' => ['email' => SORT_ASC],
                     'desc' => ['email' => SORT_DESC],
-                    'label' => 'Email'
+                    'label' => 'Email',
                 ],
-            ]
+            ],
         ]);
 
-        if (!($this->load($params) && $this->validate())) {$query->joinWith(['rol'])
+        if (!($this->load($params) && $this->validate())) {
+            $query->joinWith(['rol'])
                 ->joinWith(['estado'])
-                ->joinWith(['perfil'])
-                ->joinWith(['tipoUsuario']);
+                ->joinWith(['perfil']);
             return $dataProvider;
         }
 
         $this->addSearchParameter($query, 'id');
         $this->addSearchParameter($query, 'username', true);
+        $this->addSearchParameter($query, 'apellido_paterno', true);
+        $this->addSearchParameter($query, 'apellido_materno', true);
         $this->addSearchParameter($query, 'email', true);
         $this->addSearchParameter($query, 'rol_id');
         $this->addSearchParameter($query, 'estado_id');
-        $this->addSearchParameter($query, 'tipo_usuario_id');
         $this->addSearchParameter($query, 'created_at');
         $this->addSearchParameter($query, 'updated_at');
 
         $query->joinWith(['rol' => function ($q) {
-            $q->andFilterWhere(['=', 'rol.rol_nombre',$this->rolNombre]);
+            $q->andFilterWhere(['=', 'rol.rol_nombre', $this->rolNombre]);
         }])
         ->joinWith(['estado' => function ($q) {
-            $q->andFilterWhere(['=', 'estado.estado_nombre',$this->estadoNombre]);
-        }])
-        ->joinWith(['tipoUsuario' => function ($q) {
-            $q->andFilterWhere(['=', 'tipo_usuario.tipo_usuario_nombre',$this->tipoUsuarioNombre]);
+            $q->andFilterWhere(['=', 'estado.estado_nombre', $this->estadoNombre]);
         }])
         ->joinWith(['perfil' => function ($q) {
-            $q->andFilterWhere(['=', 'perfil.id',$this->perfilId]);
+            $q->andFilterWhere(['=', 'perfil.id', $this->perfilId]);
         }]);
 
         return $dataProvider;
     }
 
-    protected function addSearchParameter($query, $attribute,$partialMatch = false)
+    protected function addSearchParameter($query, $attribute, $partialMatch = false)
     {
-        if (($pos = strrpos($attribute, '.')) !== false) {$modelAttribute = substr($attribute,$pos + 1);
+        if (($pos = strrpos($attribute, '.')) !== false) {
+            $modelAttribute = substr($attribute, $pos + 1);
         } else {
-            $modelAttribute =$attribute;
+            $modelAttribute = $attribute;
         }
 
         $value = $this->$modelAttribute;
 
-        if (trim((string)$value) === '') {
+        if (trim((string) $value) === '') {
             return;
         }
 
         $attribute = "user.$attribute";
 
-        if ($partialMatch) {$query->andWhere(['like', $attribute,$value]);
+        if ($partialMatch) {
+            $query->andWhere(['like', $attribute, $value]);
         } else {
-            $query->andWhere([$attribute =>$value]);
+            $query->andWhere([$attribute => $value]);
         }
     }
 }
